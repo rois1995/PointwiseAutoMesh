@@ -3,8 +3,9 @@
 
 HOME="$(pwd)"
 cd Test
-Directories="$(ls -d */)"
+Directories="$(ls)"
 RemovePW=1
+Verbose=Silent
 
 for TestCase in $Directories
 do
@@ -23,7 +24,12 @@ do
 
     cp -r $HOME/src . && cp $HOME/CreateMesh.glf .
 
-    pointwise -b CreateMesh.glf
+    if [ $Verbose == "Silent" ]
+    then
+      pointwise -b CreateMesh.glf > /dev/null
+    else
+      pointwise -b CreateMesh.glf
+    fi
 
     CellsFile="$(ls *.txt)"
     if [ -z "$CellsFile" ]
@@ -34,7 +40,7 @@ do
       NCells="$(sed -n -e 's/^Number of cells is: //p' $CellsFile)"
       if [ $NCells != "0" ]
       then
-        echo "Number of cells = $NCells"
+        echo "PASSED!"
 
         if [ $RemovePW == 1 ]
         then
@@ -53,7 +59,11 @@ do
     fi
   fi
 
-echo " "
+if [ $Verbose != "Silent" ]
+then
+  echo " "
+fi
+
 echo " "
 
 done
