@@ -279,6 +279,25 @@ for {set i 0} {$i < $NLines} {incr i} {
     set GrBegin 0
     lappend GrowthRates 0
 
+  } elseif {$SpacFun == "Tanh"} {
+
+    set NValuesGrowthRates 1
+
+    set SpacingTypeBegin [lindex $Spacings 0]
+    set SpacingTypeEnd [lindex $Spacings 2]
+    lappend SpacingType $SpacingTypeBegin
+    lappend SpacingType $SpacingTypeEnd
+    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+    set SpacingBegin [lindex $Spacings 1]
+    set SpacingEnd [lindex $Spacings 3]
+    lappend SpacingValue $SpacingBegin
+    lappend SpacingValue $SpacingEnd
+    # set Spacing {$SpacingBegin $SpacingEnd}
+
+    set GrBegin 0
+    lappend GrowthRates 0
+
   } else {
 
     # Default is Growth function. However, I do not think that it will work
@@ -324,3 +343,8 @@ for {set i 0} {$i < $NLines} {incr i} {
 }
 
 # puts $AirfoilLinesList
+
+
+if {$MeshStrategy == "Unstructured"} {
+  pw::DomainUnstructured setInitializeInterior 0
+}
