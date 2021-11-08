@@ -8,6 +8,15 @@ Glyph scripts for automatic meshing of 2D profiles through Pointwise
 4. Outputs some important mesh quality metrics (number of cells, skewness etc..) as min and max values both to screen and to a file
 5. Possibility of including multi-element airfoils
 
+Example of structured mesh:
+![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/StructuredMesh.png)
+
+Example of multi-line airfoil unstructured mesh
+![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/MultiLineAirfoil.png)
+
+Example of quad-dominant Euler mesh
+![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/EulerMesh.png)
+
 ## Pre-requisites
 Pointwise software has to be installed on your machine. Version 18.4 is required. 
 
