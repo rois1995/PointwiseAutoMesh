@@ -52,4 +52,5 @@ set NLines [llength $ConnectorList2Extrude]
 set NLines [expr {$NLines+2}]
 set farfieldName "con-"
 set farfieldName $farfieldName$NLines
+puts $farfieldName
 set FarfieldExtruded [pw::GridEntity getByName $farfieldName]

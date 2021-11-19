@@ -32,18 +32,13 @@ foreach AirfoilLine $AirfoilLinesList {
       set BeginSpacing [lindex $SpaceTypes 0]
     }
 
-    set endIndex 2
-    if {$SpacFun == "Tanh"} {
-      set endIndex 1
-    }
-
     # Extract End spacings
-    if {[lindex $SpaceTypes $endIndex] == "Angle"} {
-      set EndSpacing [extractAngularSpacing $Con [lindex $SpaceValues $endIndex] "End"]
-    } elseif {[lindex $SpaceTypes $endIndex] == "Value"} {
-      set EndSpacing [lindex $SpaceValues $endIndex]
+    if {[lindex $SpaceTypes 2] == "Angle"} {
+      set EndSpacing [extractAngularSpacing $Con [lindex $SpaceValues 2] "End"]
+    } elseif {[lindex $SpaceTypes 2] == "Value"} {
+      set EndSpacing [lindex $SpaceValues 2]
     } else {
-      set EndSpacing [lindex $SpaceTypes $endIndex]
+      set EndSpacing [lindex $SpaceTypes 2]
     }
 
     set bufferList [list]
@@ -180,18 +175,6 @@ foreach con $ConSpacings2Complete {
     # puts $Spacings
     # puts $MidSpacing
     setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
-  } elseif {[lindex $con 1] == "Tanh"} {
-
-    set connector [lindex $con 0]
-    set Spacings [list]
-    lappend Spacings $BeginSpacing
-    lappend Spacings $EndSpacing
-
-    # puts $connector
-    # puts $Spacings
-    # puts $MidSpacing
-    setTanhDistr $connector $Spacings
-
   }
 }
 

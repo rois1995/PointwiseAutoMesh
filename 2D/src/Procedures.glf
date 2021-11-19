@@ -106,24 +106,6 @@ proc setGrowthDistr { connector ExtremesSpacing GrowthRate MiddleSpacing} {
 }
 
 
-
-proc setTanhDistr { connector ExtremesSpacing } {
-
-  set _TMP(mode_1) [pw::Application begin Modify [list $connector]]
-    pw::Connector swapDistribution Tanh [list [list $connector 1]]
-    set Distr [$connector getDistribution 1]
-
-    $Distr setBeginSpacing [lindex $ExtremesSpacing 0]
-    $Distr setEndSpacing [lindex $ExtremesSpacing 1]
-
-    $connector setSubConnectorDimensionFromDistribution 1
-  $_TMP(mode_1) end
-  unset _TMP(mode_1)
-  pw::Application markUndoLevel Distribute
-
-}
-
-
 proc findEdgeCompletion { edge } {
 
   set hint [pw::DomainUnstructured getAutoCompleteHint $edge]

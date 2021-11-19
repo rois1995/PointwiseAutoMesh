@@ -29,26 +29,75 @@ pw::Application markUndoLevel {Name BC}
 
 unset _TMP(PW_3)
 
+set OneConn 1
+if { $OneBoundaryTag == "true" } {
 
-set i 3
-foreach Con $Connectors {
 
-  set BCName "bc-"
-  set BCName $BCName$i
+  set OneBoundaryCon [list]
+  foreach Con $Connectors {
 
+    lappend OneBoundaryCon [lindex $Con 1]
+
+  }
+
+  set _TMP(PW_1) [pw::Connector join -reject _TMP(ignored) -keepDistribution $OneBoundaryCon]
+  unset _TMP(ignored)
+  unset _TMP(PW_1)
+  pw::Application markUndoLevel Join
+
+  set OneBoundaryName "con-"
+  if { $MeshStrategy == "Structured" } {
+    set OneBoundaryName "con-1"
+  } else {
+    set NConn [llength $OneBoundaryCon]
+    set OneBoundaryName $OneBoundaryName$NConn
+
+  }
+
+  set OneBoundary [pw::GridEntity getByName $OneBoundaryName]
+  # set _TMP(mode_1) [pw::Application begin Modify [list $OneBoundary]]
+  #   $OneBoundary removeAllBreakPoints
+  # $_TMP(mode_1) end
+  # unset _TMP(mode_1)
+  # pw::Application markUndoLevel Distribute
+
+
+  set BCName "bc-3"
   set TMP [pw::BoundaryCondition create]
   pw::Application markUndoLevel {Create BC}
   set TMP_1 [pw::BoundaryCondition getByName $BCName]
-  # unset TMP
 
-  $TMP_1 setName [lindex $Con 0]
+
+  $TMP_1 setName $OneBoundaryTagName
   pw::Application markUndoLevel {Name BC}
 
-  $TMP_1 apply [list [list $ActualMesh [lindex $Con 1]]]
+  $TMP_1 apply [list [list $ActualMesh $OneBoundary]]
   pw::Application markUndoLevel {Set BC}
 
-  # unset $TMP_1
 
-  set i [expr {$i+1}]
+}
 
+if { $OneBoundaryTag == "false" } {
+  set i 3
+  foreach Con $Connectors {
+
+    set BCName "bc-"
+    set BCName $BCName$i
+
+    set TMP [pw::BoundaryCondition create]
+    pw::Application markUndoLevel {Create BC}
+    set TMP_1 [pw::BoundaryCondition getByName $BCName]
+    # unset TMP
+
+    $TMP_1 setName [lindex $Con 0]
+    pw::Application markUndoLevel {Name BC}
+
+    $TMP_1 apply [list [list $ActualMesh [lindex $Con 1]]]
+    pw::Application markUndoLevel {Set BC}
+
+    # unset $TMP_1
+
+    set i [expr {$i+1}]
+
+  }
 }
