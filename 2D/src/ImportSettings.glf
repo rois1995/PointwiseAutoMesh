@@ -281,8 +281,8 @@ for {set i 0} {$i < $NLines} {incr i} {
     # set Spacing {$SpacingBegin $SpacingEnd}
 
 
-    set GrBegin [lindex $AirfoilGrowthRates $NValuesGrowthRates]
-    set GrEnd [lindex $AirfoilGrowthRates [expr {$NValuesGrowthRates+1}]]
+    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
     lappend GrowthRates $GrBegin
     lappend GrowthRates $GrEnd
 
@@ -319,8 +319,8 @@ for {set i 0} {$i < $NLines} {incr i} {
     lappend SpacingValue $SpacingEnd
     # set Spacing {$SpacingBegin $SpacingEnd}
 
-    set GrBegin [lindex $AirfoilGrowthRates $NValuesGrowthRates]
-    set GrEnd [lindex $AirfoilGrowthRates [expr {$NValuesGrowthRates+1}]]
+    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
     lappend GrowthRates $GrBegin
     lappend GrowthRates $GrEnd
 
