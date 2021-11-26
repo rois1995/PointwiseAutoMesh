@@ -170,11 +170,12 @@ set _TMP(mode_1) [pw::Application begin Create]
   $ActualMesh addEdge $Airfoil
 
 
-  unset Airfoil
+  # unset Airfoil
   unset Farfield
 $_TMP(mode_1) end
 unset _TMP(mode_1)
 pw::Application markUndoLevel {Assemble Domain}
+
 
 set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
 
@@ -191,17 +192,51 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
     set _TMP(PW_1) [pw::TRexCondition getByName bc-2]
     $_TMP(PW_1) setName Wall
 
+    set iCon 0
     foreach con $Connectors {
       set conName [lindex $con 1]
-      if { [catch {$_TMP(PW_1) apply [list [list $ActualMesh $conName Same]] } ] } {
-        $_TMP(PW_1) apply [list [list $ActualMesh $conName Opposite]]
-      } else {
-        $_TMP(PW_1) apply [list [list $ActualMesh $conName Same]]
+      set spaceFun [lindex [lindex $AirfoilLinesList $iCon] 3]
+      if {$spaceFun != "Shape"} {
+        if { [catch {$_TMP(PW_1) apply [list [list $ActualMesh $conName Same]] } ] } {
+          $_TMP(PW_1) apply [list [list $ActualMesh $conName Opposite]]
+        } else {
+          $_TMP(PW_1) apply [list [list $ActualMesh $conName Same]]
+        }
       }
+
+      set iCon [expr {$iCon+1}]
     }
 
     $_TMP(PW_1) setConditionType Wall
+    $_TMP(PW_1) setAdaptation Off
     $_TMP(PW_1) setValue $InitialSpacing
+
+
+    set _TMP(PW_2) [pw::TRexCondition create]
+    unset _TMP(PW_2)
+    set _TMP(PW_2) [pw::TRexCondition getByName bc-3]
+    $_TMP(PW_2) setName Ice
+
+    set iCon 0
+    foreach con $Connectors {
+      set conName [lindex $con 1]
+      set spaceFun [lindex [lindex $AirfoilLinesList $iCon] 3]
+      if {$spaceFun == "Shape"} {
+        if { [catch {$_TMP(PW_2) apply [list [list $ActualMesh $conName Same]] } ] } {
+          $_TMP(PW_2) apply [list [list $ActualMesh $conName Opposite]]
+        } else {
+          $_TMP(PW_2) apply [list [list $ActualMesh $conName Same]]
+        }
+      }
+
+      set iCon [expr {$iCon+1}]
+    }
+
+    $_TMP(PW_2) setConditionType Wall
+    $_TMP(PW_2) setAdaptation On
+    $_TMP(PW_2) setValue $InitialSpacing
+
+
     $ActualMesh setUnstructuredSolverAttribute TRexGrowthRate $GrowthRateBL
     $ActualMesh setUnstructuredSolverAttribute TRexCellType $CellTypeBL
 

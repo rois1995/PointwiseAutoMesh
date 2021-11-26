@@ -2,11 +2,24 @@ package require PWI_Glyph 4.18.4
 
 
 if {$MeshStrategy == "Unstructured"} {
-  set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
-    $_TMP(mode_1) run Initialize
-  $_TMP(mode_1) end
-  unset _TMP(mode_1)
-  pw::Application markUndoLevel Solve
+  if {$OneBoundaryTag == "false"} {
+    set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
+      $_TMP(mode_1) run Initialize
+    $_TMP(mode_1) end
+    unset _TMP(mode_1)
+    pw::Application markUndoLevel Solve
+
+
+    # Now that I have the mesh done and with the final spacings and the Airofil edge
+    # with the connectors aligned in order, I can go through each of these and
+    # check if the connector spacing at the point of intersection is equal or not
+
+    checkConnectorSpacings $Airfoil $ConSpacings2Complete
+
+    
+  }
+
+
 }
 
 puts "------------------------------------------------------------------------"

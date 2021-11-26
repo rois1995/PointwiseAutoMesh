@@ -286,6 +286,30 @@ for {set i 0} {$i < $NLines} {incr i} {
     lappend GrowthRates $GrBegin
     lappend GrowthRates $GrEnd
 
+  } elseif {$SpacFun == "Tanh"} {
+
+    set NValuesGrowthRates 1
+
+    set SpacingTypeBegin [lindex $Spacings 0]
+    set SpacingTypeMid [lindex $Spacings 2]
+    set SpacingTypeEnd [lindex $Spacings 4]
+    lappend SpacingType $SpacingTypeBegin
+    lappend SpacingType $SpacingTypeMid
+    lappend SpacingType $SpacingTypeEnd
+    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+    set SpacingBegin [lindex $Spacings 1]
+    set SpacingMid [lindex $Spacings 3]
+    set SpacingEnd [lindex $Spacings 5]
+    lappend SpacingValue $SpacingBegin
+    lappend SpacingValue $SpacingMid
+    lappend SpacingValue $SpacingEnd
+    # set Spacing {$SpacingBegin $SpacingEnd}
+
+
+    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+    lappend GrowthRates $GrBegin
+
   } elseif {$SpacFun == "Uniform"} {
 
     set NValuesGrowthRates 1
@@ -295,6 +319,28 @@ for {set i 0} {$i < $NLines} {incr i} {
 
     set GrBegin 0
     lappend GrowthRates 0
+
+  } elseif {$SpacFun == "Shape"} {
+
+    set NValuesGrowthRates 2
+
+    set SpacingTypeAngle [lindex $Spacings 0]
+    set SpacingTypemaxSpacing [lindex $Spacings 2]
+    lappend SpacingType $SpacingTypeAngle
+    lappend SpacingType $SpacingTypemaxSpacing
+    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+    set Angle [lindex $Spacings 1]
+    set maxSpacing [lindex $Spacings 3]
+    lappend SpacingValue $Angle
+    lappend SpacingValue $maxSpacing
+    # set Spacing {$SpacingBegin $SpacingEnd}
+
+    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
+    lappend GrowthRates $GrBegin
+    lappend GrowthRates $GrEnd
+
 
   } else {
 

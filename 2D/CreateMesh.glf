@@ -19,6 +19,8 @@ pw::Connector setDefault Dimension 100
 pw::Application setGridPreference Unstructured
 pw::Application setCAESolver CGNS 2
 
+pw::Connector setCalculateDimensionMaximum 100000
+
 
 set path [pwd]
 
@@ -118,6 +120,28 @@ puts " "
 
 if {$MeshStrategy == "Unstructured"} {
 
+
+  puts " "
+  puts "########################################################################"
+
+  puts "Creating Point Clouds... "
+
+  set startTime [pwu::Time now]
+
+  set filename "CreatePointClouds.glf"
+  set filename $path2Scripts$filename
+  pw::Script source $filename
+  pw::Application markUndoLevel {Run Script}
+
+  set elapsedTime [pwu::Time elapsed $startTime]
+
+  puts "Done with the PointClouds! Elapsed time = [pwu::Time double $elapsedTime] secs"
+
+  puts "########################################################################"
+  puts " "
+
+
+
   puts " "
   puts "########################################################################"
 
@@ -210,3 +234,6 @@ if {$initializeSurf == 1} {
   puts " "
 
 }
+
+set PointwiseFilename $path$PointwiseName
+pw::Application save $PointwiseFilename

@@ -12,11 +12,13 @@ set ConSpacingsAll [list]
 # and define uniform connectors
 foreach AirfoilLine $AirfoilLinesList {
 
+
   set Name [lindex $AirfoilLine 2]
   set SpacFun [lindex $AirfoilLine 3]
   set SpaceTypes [lindex $AirfoilLine 4]
   set SpaceValues [lindex $AirfoilLine 5]
   set GrowthRates [lindex $AirfoilLine 6]
+
 
   set Con [lindex [lindex $Connectors $i] 1]
 
@@ -82,6 +84,29 @@ foreach AirfoilLine $AirfoilLinesList {
     lappend bufferList $MidSpacing
     lappend bufferList $EndSpacing
 
+  } elseif {$SpacFun == "Shape"} {
+
+    # Extract angular spacing
+    set angularSpacing [lindex $SpaceValues 0]
+
+    # Extract max spacing
+    set maxSpacing [lindex $SpaceValues 1]
+
+    set bufferList [list]
+    lappend bufferList $angularSpacing
+    lappend bufferList $maxSpacing
+
+
+    set bufferListBig [list]
+    lappend bufferListBig $Con
+    lappend bufferListBig $SpacFun
+    lappend bufferListBig $bufferList
+    if {$SpacFun == "Shape"} {
+      lappend bufferListBig $GrowthRates
+    }
+
+    lappend ConSpacings2Complete $bufferListBig
+
   }
 
   set bufferListBig [list]
@@ -93,9 +118,88 @@ foreach AirfoilLine $AirfoilLinesList {
 }
 
 
+set ConSpacings2CompleteSaved $ConSpacings2Complete
+
+
+# First do all of the connectors which have everything fixed
+
+# Now assign spacing values with their functions
+for {set j 0} {$j < [llength $ConSpacings2Complete]} {incr j} {
+
+  set con [lindex $ConSpacings2Complete $j]
+
+  # Extract spacing functions
+  set SpacFun [lindex $con 2]
+
+
+
+
+  # Begin
+  set SpacFunBegin [lindex $SpacFun 0]
+  set SpacFunBegin [split $SpacFunBegin "_"]
+
+  if {[lindex $con 1] != "Shape"} {
+
+
+    # End
+    set SpacFunEnd [lindex $SpacFun 2]
+    set SpacFunEnd [split $SpacFunEnd "_"]
+
+    if {[llength $SpacFunBegin] == 1 && [llength $SpacFunEnd] == 1} {
+
+      set BeginSpacing $SpacFunBegin
+      set EndSpacing $SpacFunEnd
+
+      if {[lindex $con 1] == "Growth"} {
+
+        set connector [lindex $con 0]
+        set Spacings [list]
+        lappend Spacings $BeginSpacing
+        lappend Spacings $EndSpacing
+        set MidSpacing [lindex $SpacFun 1]
+        set MidSpacing [expr {$MidSpacing * $Chord}]
+        set GrowthRates [lindex $con 3]
+
+        # puts $connector
+        # puts $Spacings
+        # puts $MidSpacing
+        setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
+      } elseif {[lindex $con 1] == "Tanh"} {
+
+        set connector [lindex $con 0]
+        set Spacings [list]
+        lappend Spacings $BeginSpacing
+        lappend Spacings $EndSpacing
+
+        setTanhDistr $connector $Spacings
+      }
+
+      set ConSpacings2Complete [lreplace $ConSpacings2Complete $j $j]
+      set j [expr {$j - 1}]
+
+    }
+  } else {
+
+    set connector [lindex $con 0]
+    set BeginSpacing $SpacFunBegin
+    set Angle $BeginSpacing
+
+    setShapeDistr $connector $Angle
+
+    set ConSpacings2Complete [lreplace $ConSpacings2Complete $j $j]
+    set j [expr {$j - 1}]
+
+
+
+  }
+
+}
+
+
 # puts $ConSpacings2Complete
 
-# Now asign spacing values with their functions
+
+# Now assign spacing values with their functions
 foreach con $ConSpacings2Complete {
 
   # Extract spacing functions
@@ -132,33 +236,35 @@ foreach con $ConSpacings2Complete {
   }
 
 
+  if {[lindex $con 1] != "Shape" } {
 
-  # End
-  set SpacFunEnd [lindex $SpacFun 2]
-  set SpacFunEnd [split $SpacFunEnd "_"]
+    # End
+    set SpacFunEnd [lindex $SpacFun  2]
+    set SpacFunEnd [split $SpacFunEnd "_"]
 
-  # Check if it is in the form ConName_Begin or ConName_End
-  if {[llength $SpacFunEnd] > 1 } {
+    # Check if it is in the form ConName_Begin or ConName_End
+    if {[llength $SpacFunEnd] > 1 } {
 
-    set conName2Find [lindex $SpacFunEnd 0]
-    set whichSpacing [lindex $SpacFunEnd 1]
+      set conName2Find [lindex $SpacFunEnd 0]
+      set whichSpacing [lindex $SpacFunEnd 1]
 
-    if {$whichSpacing == "Begin"} {
-      set whichSpacing 0
-    } elseif {$whichSpacing == "End"} {
-      set whichSpacing 2
-    }
-
-    # find the connector from which to take the spacing
-    foreach Line $ConSpacingsAll {
-      set conName [lindex $Line 0]
-      if { $conName2Find == $conName} {
-        set EndSpacing [lindex [lindex $Line 1] $whichSpacing]
+      if {$whichSpacing == "Begin"} {
+        set whichSpacing 0
+      } elseif {$whichSpacing == "End"} {
+        set whichSpacing 2
       }
-    }
 
-  } else {
-    set EndSpacing [lindex [lindex $con 2] 2]
+      # find the connector from which to take the spacing
+      foreach Line $ConSpacingsAll {
+        set conName [lindex $Line 0]
+        if { $conName2Find == $conName} {
+          set EndSpacing [lindex [lindex $Line 1] $whichSpacing]
+        }
+      }
+
+    } else {
+      set EndSpacing [lindex [lindex $con 2] 2]
+    }
   }
 
   if {[lindex $con 1] == "Growth"} {
@@ -175,9 +281,29 @@ foreach con $ConSpacings2Complete {
     # puts $Spacings
     # puts $MidSpacing
     setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
+  } elseif {[lindex $con 1] == "Tanh"} {
+
+    set connector [lindex $con 0]
+    set Spacings [list]
+    lappend Spacings $BeginSpacing
+    lappend Spacings $EndSpacing
+
+    setTanhDistr $connector $Spacings
   }
+
+  # if {[lindex $con 1] == "Shape"} {
+  #
+  #   set connector [lindex $con 0]
+  #   set Angle $BeginSpacing
+  #
+  #   # puts $connector
+  #   # puts $Spacings
+  #   # puts $MidSpacing
+  #   setShapeDistr $connector $Angle
+  # }
 }
 
 
+set ConSpacings2Complete $ConSpacings2CompleteSaved
 
 puts "Done!"
