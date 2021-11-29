@@ -211,10 +211,19 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
     $_TMP(PW_1) setAdaptation Off
     $_TMP(PW_1) setValue $InitialSpacing
 
+    unset _TMP(PW_1)
+
+  }
+
 
     set _TMP(PW_2) [pw::TRexCondition create]
     unset _TMP(PW_2)
-    set _TMP(PW_2) [pw::TRexCondition getByName bc-3]
+    if {$Euler == "OFF"} {
+      set _TMP(PW_2) [pw::TRexCondition getByName bc-3]
+    } else {
+      set _TMP(PW_2) [pw::TRexCondition getByName bc-2]
+    }
+
     $_TMP(PW_2) setName Ice
 
     set iCon 0
@@ -232,17 +241,21 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
       set iCon [expr {$iCon+1}]
     }
 
-    $_TMP(PW_2) setConditionType Wall
     $_TMP(PW_2) setAdaptation On
+
+  if {$Euler == "OFF"} {
+    $_TMP(PW_2) setConditionType Wall
     $_TMP(PW_2) setValue $InitialSpacing
+  }
 
-
+  if {$Euler == "OFF"} {
     $ActualMesh setUnstructuredSolverAttribute TRexGrowthRate $GrowthRateBL
     $ActualMesh setUnstructuredSolverAttribute TRexCellType $CellTypeBL
-
-    unset _TMP(PW_1)
-
   }
+
+
+
+
 
   $ActualMesh setSizeFieldDecay $BoundaryDecay
   $ActualMesh setUnstructuredSolverAttribute Algorithm $AlgorithmSurface
