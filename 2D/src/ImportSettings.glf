@@ -112,6 +112,8 @@ if {$Euler == "ON"} {
 
 if {$MeshStrategy == "Unstructured"} {
 
+  pw::DomainUnstructured setInitializeInterior 0
+
   if {$Euler == "OFF"} {
     foreach line $data {
          set words [split $line " "]
