@@ -18,6 +18,13 @@ if {$MeshStrategy == "Unstructured"} {
 
     checkConnectorSpacings $Airfoil $ConSpacings2Complete
 
+    pw::DomainUnstructured setInitializeInterior 1
+
+    set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
+      $_TMP(mode_1) run Initialize
+    $_TMP(mode_1) end
+    unset _TMP(mode_1)
+
 
   }
 

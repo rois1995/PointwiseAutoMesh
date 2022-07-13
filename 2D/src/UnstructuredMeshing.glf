@@ -8,7 +8,7 @@ pw::Application setUndoMaximumLevels 5
 #-------------------------------------------------------------------------------
 # Farfield construction
 
-puts "Constructing Fafield..."
+puts "Constructing Farfield..."
 
 set FarfieldPoint [list]
 lappend FarfieldPoint 0
@@ -381,6 +381,9 @@ if {$TERefinement == "ON"} {
   pw::Application markUndoLevel Sources
 
 }
+
+set PointwiseFilename $path$PointwiseName
+pw::Application save $PointwiseFilename
 
 
 puts "Done!"

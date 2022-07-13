@@ -21,6 +21,11 @@ foreach line $data {
 
      # puts $line
 
+     # Profile parameters
+     if {[lindex $words 0]=="Chord="} {
+      set Chord [lindex $words 1]
+     }
+
 
      # Input variables
      if {[lindex $words 0]=="File2Import="} {
@@ -34,10 +39,14 @@ foreach line $data {
        # puts $AirfoilOrientation
      }
 
+     if {[lindex $words 0]=="File2Import="} {
+       set AirfoilLines [extractVectorSettings $words]
+       # puts $AirfoilLines
+     }
 
      # Profile parameters
-     if {[lindex $words 0]=="Chord="} {
-      set Chord [lindex $words 1]
+     if {[lindex $words 0]=="UseFileDistribution="} {
+      set UseFileDistribution [lindex $words 1]
      }
 
 
@@ -252,149 +261,162 @@ for {set i 0} {$i < $NLines} {incr i} {
   set fileName [lindex $AirfoilLines $i]
   set is2BeSplined [lindex $Is2Spline $i]
   set lineName [string trimright [lindex $AirfoilLines $i] ".dat"]
-  set SpacFun [lindex $AirfoilSpacingsFun $i]
+
+  if {!$UseFileDistribution} {
+    set SpacFun [lindex $AirfoilSpacingsFun $i]
 
 
-  set SpacingValue [list]
-  set SpacingType [list]
-  set GrowthRates [list]
+    set SpacingValue [list]
+    set SpacingType [list]
+    set GrowthRates [list]
 
-  set line2Find "Spacings_"
-  set line2Find $line2Find$lineName
-  set ToAdd "="
-  set line2Find $line2Find$ToAdd
+    set line2Find "Spacings_"
+    set line2Find $line2Find$lineName
+    set ToAdd "="
+    set line2Find $line2Find$ToAdd
 
-  set data [split $file_data "\n"]
-  foreach line $data {
-       set words [split $line " "]
+    set data [split $file_data "\n"]
+    foreach line $data {
+         set words [split $line " "]
 
-       if {[lindex $words 0]==$line2Find} {
-         set Spacings [extractVectorSettings $words]
-       }
+         if {[lindex $words 0]==$line2Find} {
+           set Spacings [extractVectorSettings $words]
+         }
 
+    }
+
+    if {$SpacFun == "Growth"} {
+      set NValuesGrowthRates 2
+
+      set SpacingTypeBegin [lindex $Spacings 0]
+      set SpacingTypeMid [lindex $Spacings 2]
+      set SpacingTypeEnd [lindex $Spacings 4]
+      lappend SpacingType $SpacingTypeBegin
+      lappend SpacingType $SpacingTypeMid
+      lappend SpacingType $SpacingTypeEnd
+      # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+      set SpacingBegin [lindex $Spacings 1]
+      set SpacingMid [lindex $Spacings 3]
+      set SpacingEnd [lindex $Spacings 5]
+      lappend SpacingValue $SpacingBegin
+      lappend SpacingValue $SpacingMid
+      lappend SpacingValue $SpacingEnd
+      # set Spacing {$SpacingBegin $SpacingEnd}
+
+
+      set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+      set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
+      lappend GrowthRates $GrBegin
+      lappend GrowthRates $GrEnd
+
+    } elseif {$SpacFun == "Tanh"} {
+
+      set NValuesGrowthRates 1
+
+      set SpacingTypeBegin [lindex $Spacings 0]
+      set SpacingTypeMid [lindex $Spacings 2]
+      set SpacingTypeEnd [lindex $Spacings 4]
+      lappend SpacingType $SpacingTypeBegin
+      lappend SpacingType $SpacingTypeMid
+      lappend SpacingType $SpacingTypeEnd
+      # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+      set SpacingBegin [lindex $Spacings 1]
+      set SpacingMid [lindex $Spacings 3]
+      set SpacingEnd [lindex $Spacings 5]
+      lappend SpacingValue $SpacingBegin
+      lappend SpacingValue $SpacingMid
+      lappend SpacingValue $SpacingEnd
+      # set Spacing {$SpacingBegin $SpacingEnd}
+
+
+      set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+      lappend GrowthRates $GrBegin
+
+    } elseif {$SpacFun == "Uniform"} {
+
+      set NValuesGrowthRates 1
+
+      lappend SpacingType [lindex $Spacings $ValuesIterSpacings]
+      lappend SpacingValue [lindex $Spacings [expr {$ValuesIterSpacings+1}]]
+
+      set GrBegin 0
+      lappend GrowthRates 0
+
+    } elseif {$SpacFun == "Shape"} {
+
+      set NValuesGrowthRates 2
+
+      set SpacingTypeAngle [lindex $Spacings 0]
+      set SpacingTypemaxSpacing [lindex $Spacings 2]
+      lappend SpacingType $SpacingTypeAngle
+      lappend SpacingType $SpacingTypemaxSpacing
+      # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+      set Angle [lindex $Spacings 1]
+      set maxSpacing [lindex $Spacings 3]
+      lappend SpacingValue $Angle
+      lappend SpacingValue $maxSpacing
+      # set Spacing {$SpacingBegin $SpacingEnd}
+
+      set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+      set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
+      lappend GrowthRates $GrBegin
+      lappend GrowthRates $GrEnd
+
+
+    } else {
+
+      # Default is Growth function. However, I do not think that it will work
+      set SpacFun "Growth"
+
+      set NValuesGrowthRates 2
+
+      set SpacingTypeBegin [lindex $Spacings 0]
+      set SpacingTypeMid [lindex $Spacings 2]
+      set SpacingTypeEnd [lindex $Spacings 4]
+      lappend SpacingType $SpacingTypeBegin
+      lappend SpacingType $SpacingTypeMid
+      lappend SpacingType $SpacingTypeEnd
+      # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
+
+      set SpacingBegin [lindex $Spacings 1]
+      set SpacingMid [lindex $Spacings 3]
+      set SpacingEnd [lindex $Spacings 5]
+      lappend SpacingValue $SpacingBegin
+      lappend SpacingValue $SpacingMid
+      lappend SpacingValue $SpacingEnd
+      # set Spacing {$SpacingBegin $SpacingEnd}
+
+      set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
+      set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
+      lappend GrowthRates $GrBegin
+      lappend GrowthRates $GrEnd
+
+    }
+
+    set ValuesIterGrowthRates [expr {$ValuesIterGrowthRates + $NValuesGrowthRates}]
   }
 
-  if {$SpacFun == "Growth"} {
-    set NValuesGrowthRates 2
 
-    set SpacingTypeBegin [lindex $Spacings 0]
-    set SpacingTypeMid [lindex $Spacings 2]
-    set SpacingTypeEnd [lindex $Spacings 4]
-    lappend SpacingType $SpacingTypeBegin
-    lappend SpacingType $SpacingTypeMid
-    lappend SpacingType $SpacingTypeEnd
-    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
-
-    set SpacingBegin [lindex $Spacings 1]
-    set SpacingMid [lindex $Spacings 3]
-    set SpacingEnd [lindex $Spacings 5]
-    lappend SpacingValue $SpacingBegin
-    lappend SpacingValue $SpacingMid
-    lappend SpacingValue $SpacingEnd
-    # set Spacing {$SpacingBegin $SpacingEnd}
-
-
-    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
-    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
-    lappend GrowthRates $GrBegin
-    lappend GrowthRates $GrEnd
-
-  } elseif {$SpacFun == "Tanh"} {
-
-    set NValuesGrowthRates 1
-
-    set SpacingTypeBegin [lindex $Spacings 0]
-    set SpacingTypeMid [lindex $Spacings 2]
-    set SpacingTypeEnd [lindex $Spacings 4]
-    lappend SpacingType $SpacingTypeBegin
-    lappend SpacingType $SpacingTypeMid
-    lappend SpacingType $SpacingTypeEnd
-    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
-
-    set SpacingBegin [lindex $Spacings 1]
-    set SpacingMid [lindex $Spacings 3]
-    set SpacingEnd [lindex $Spacings 5]
-    lappend SpacingValue $SpacingBegin
-    lappend SpacingValue $SpacingMid
-    lappend SpacingValue $SpacingEnd
-    # set Spacing {$SpacingBegin $SpacingEnd}
-
-
-    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
-    lappend GrowthRates $GrBegin
-
-  } elseif {$SpacFun == "Uniform"} {
-
-    set NValuesGrowthRates 1
-
-    lappend SpacingType [lindex $Spacings $ValuesIterSpacings]
-    lappend SpacingValue [lindex $Spacings [expr {$ValuesIterSpacings+1}]]
-
-    set GrBegin 0
-    lappend GrowthRates 0
-
-  } elseif {$SpacFun == "Shape"} {
-
-    set NValuesGrowthRates 2
-
-    set SpacingTypeAngle [lindex $Spacings 0]
-    set SpacingTypemaxSpacing [lindex $Spacings 2]
-    lappend SpacingType $SpacingTypeAngle
-    lappend SpacingType $SpacingTypemaxSpacing
-    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
-
-    set Angle [lindex $Spacings 1]
-    set maxSpacing [lindex $Spacings 3]
-    lappend SpacingValue $Angle
-    lappend SpacingValue $maxSpacing
-    # set Spacing {$SpacingBegin $SpacingEnd}
-
-    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
-    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
-    lappend GrowthRates $GrBegin
-    lappend GrowthRates $GrEnd
-
-
-  } else {
-
-    # Default is Growth function. However, I do not think that it will work
-    set SpacFun "Growth"
-
-    set NValuesGrowthRates 2
-
-    set SpacingTypeBegin [lindex $Spacings 0]
-    set SpacingTypeMid [lindex $Spacings 2]
-    set SpacingTypeEnd [lindex $Spacings 4]
-    lappend SpacingType $SpacingTypeBegin
-    lappend SpacingType $SpacingTypeMid
-    lappend SpacingType $SpacingTypeEnd
-    # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
-
-    set SpacingBegin [lindex $Spacings 1]
-    set SpacingMid [lindex $Spacings 3]
-    set SpacingEnd [lindex $Spacings 5]
-    lappend SpacingValue $SpacingBegin
-    lappend SpacingValue $SpacingMid
-    lappend SpacingValue $SpacingEnd
-    # set Spacing {$SpacingBegin $SpacingEnd}
-
-    set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]
-    set GrEnd [lindex $AirfoilGrowthRates [expr {$ValuesIterGrowthRates+1}]]
-    lappend GrowthRates $GrBegin
-    lappend GrowthRates $GrEnd
-
-  }
-
-  set ValuesIterGrowthRates [expr {$ValuesIterGrowthRates + $NValuesGrowthRates}]
 
   set bufferList [list]
   lappend bufferList $fileName
   lappend bufferList $is2BeSplined
   lappend bufferList $lineName
-  lappend bufferList $SpacFun
-  lappend bufferList $SpacingType
-  lappend bufferList $SpacingValue
-  lappend bufferList $GrowthRates
+  if {$UseFileDistribution} {
+    lappend bufferList 0
+    lappend bufferList 0
+    lappend bufferList 0
+    lappend bufferList 0
+  } else {
+    lappend bufferList $SpacFun
+    lappend bufferList $SpacingType
+    lappend bufferList $SpacingValue
+    lappend bufferList $GrowthRates
+  }
+
   lappend AirfoilLinesList $bufferList
 
 }

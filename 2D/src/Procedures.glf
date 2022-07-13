@@ -351,13 +351,6 @@ proc checkConnectorSpacings { AirfoilEdge Connectors } {
   }
 
 
-  pw::DomainUnstructured setInitializeInterior 1
-
-  global ActualMesh
-
-  set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
-    $_TMP(mode_1) run Initialize
-  $_TMP(mode_1) end
-  unset _TMP(mode_1)
+  
 
 }
