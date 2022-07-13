@@ -1,5 +1,7 @@
 package require PWI_Glyph 4.18.4
 
+set PointwiseFilename $path$PointwiseName
+pw::Application save $PointwiseFilename
 
 if {$MeshStrategy == "Unstructured"} {
   if {$OneBoundaryTag == "false"} {
@@ -16,7 +18,7 @@ if {$MeshStrategy == "Unstructured"} {
 
     checkConnectorSpacings $Airfoil $ConSpacings2Complete
 
-    
+
   }
 
 

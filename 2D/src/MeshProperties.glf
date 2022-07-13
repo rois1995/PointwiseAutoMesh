@@ -54,6 +54,36 @@ puts " "
 
 
 
+set _TMP(exam_1) [pw::Examine create DomainEdgeLength]
+  $_TMP(exam_1) addEntity [list $ActualMesh]
+  $_TMP(exam_1) examine
+
+  set ToPrint "Max edge length is: "
+  set Metric [$_TMP(exam_1) getMaximum]
+  set ToPrint $ToPrint$Metric
+  puts $ToPrint
+
+  puts $MeshQualityFile $ToPrint
+
+
+  set ToPrint "Min edge length is: "
+  set Metric [$_TMP(exam_1) getMinimum]
+  set ToPrint $ToPrint$Metric
+  puts $ToPrint
+
+  puts $MeshQualityFile $ToPrint
+
+
+$_TMP(exam_1) delete
+unset _TMP(exam_1)
+
+
+
+puts $MeshQualityFile " "
+puts " "
+
+
+
 
 set _TMP(exam_1) [pw::Examine create DomainArea]
   $_TMP(exam_1) addEntity [list $ActualMesh]

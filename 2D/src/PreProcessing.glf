@@ -306,4 +306,79 @@ foreach con $ConSpacings2Complete {
 
 set ConSpacings2Complete $ConSpacings2CompleteSaved
 
+
+
+
+
+# Now check if airfoil orientation is as requested
+
+# I have to check if the orientation of the airfoil is correct or not
+set Airfoil [pw::Edge create]
+$Airfoil addConnector [lindex [lindex $Connectors 0] 1]
+
+set  completion [findEdgeCompletion $Airfoil]
+foreach con $completion {
+  $Airfoil addConnector $con
+}
+
+set AirfoilMesh_ToDelete [pw::DomainUnstructured create]
+$AirfoilMesh_ToDelete addEdge $Airfoil
+
+set AirfoilProj [$AirfoilMesh_ToDelete getDefaultProjectDirection]
+set AirfoilReverse false
+set hasBeenReversed false
+if {[lindex $AirfoilProj 2] == 1 && $AirfoilOrientation == "Clockwise"} {
+
+  foreach ConCouple $Connectors {
+    [lindex $ConCouple 1] setOrientation IMaximum
+  }
+
+  set hasBeenReversed true
+
+} elseif {[lindex $AirfoilProj 2] == -1 && $AirfoilOrientation == "CounterClockwise"} {
+  foreach ConCouple $Connectors {
+    [lindex $ConCouple 1] setOrientation IMaximum
+  }
+  set hasBeenReversed true
+}
+
+if {$hasBeenReversed} {
+  set Con2Mod 0
+  if {[lindex TEPointFirst 1] > [lindex TEPointSecond 1]} {
+    set Con2Mod 1
+  }
+  set Con [lindex $LinesConn2TE $Con2Mod]
+  set conName [split $Con "_"]
+  set Name [lindex $conName 0]
+  set whichSide [lindex $conName 1]
+  if {$whichSide == "Begin"} {
+    set whichSide "End"
+  } elseif {$whichSide == "End"} {
+    set whichSide "Begin"
+  }
+  set lowSpace "_"
+  set cose $Name$lowSpace$whichSide
+  set LinesConn2TE [lreplace $LinesConn2TE $Con2Mod $Con2Mod $cose]
+
+  set Con2Mod 1
+  if {[lindex TEPointFirst 1] > [lindex TEPointSecond 1]} {
+    set Con2Mod 1
+  }
+  set Con [lindex $LinesConn2TE $Con2Mod]
+  set conName [split $Con "_"]
+  set Name [lindex $conName 0]
+  set whichSide [lindex $conName 1]
+  if {$whichSide == "Begin"} {
+    set whichSide "End"
+  } elseif {$whichSide == "End"} {
+    set whichSide "Begin"
+  }
+  set lowSpace "_"
+  set cose $Name$lowSpace$whichSide
+  set LinesConn2TE [lreplace $LinesConn2TE $Con2Mod $Con2Mod $cose]
+}
+
+
+$AirfoilMesh_ToDelete delete
+
 puts "Done!"

@@ -11,7 +11,13 @@ unset _TMP(PW_2)
 
 if {$MeshStrategy == "Unstructured"} {
 
-  $_TMP(PW_3) apply [list [list $ActualMesh $_CN(5)] [list $ActualMesh $_CN(6)] [list $ActualMesh $_CN(4)] [list $ActualMesh $_CN(7)]]
+  if { $FarfieldShape == "Square" } {
+    $_TMP(PW_3) apply [list [list $ActualMesh $_CN(5)] [list $ActualMesh $_CN(6)] [list $ActualMesh $_CN(4)] [list $ActualMesh $_CN(7)]]
+  }
+
+  if { $FarfieldShape == "Circle" } {
+    $_TMP(PW_3) apply [list [list $ActualMesh $_CN(4)]]
+  }
   pw::Application markUndoLevel {Set BC}
 
 }

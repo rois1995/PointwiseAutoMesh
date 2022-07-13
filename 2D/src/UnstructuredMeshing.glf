@@ -18,113 +18,124 @@ lset FarfieldPoint 2 0
 
 set ActualFarfieldDistance [expr {$FarfieldDistance * $Chord}]
 
+if { $FarfieldShape == "Square" } {
 
-set _TMP(mode_1) [pw::Application begin Create]
-  set _TMP(PW_1) [pw::SegmentSpline create]
 
-  lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
 
-  lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
+    lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
 
-  set _CN(4) [pw::Connector create]
-  $_CN(4) addSegment $_TMP(PW_1)
+    lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(4) [pw::Connector create]
+    $_CN(4) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(4) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(5) [pw::Connector create]
+    $_CN(5) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(5) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(6) [pw::Connector create]
+    $_CN(6) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(6) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
+    lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(7) [pw::Connector create]
+    $_CN(7) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(7) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+
+
+  set _TMP(PW_1) [pw::Collection create]
+  $_TMP(PW_1) set [list $_CN(4) $_CN(6) $_CN(7) $_CN(5)]
+  $_TMP(PW_1) do setDimensionFromSpacing -resetDistribution [expr {$FarfieldSpacing * $Chord}]
+  $_TMP(PW_1) delete
   unset _TMP(PW_1)
-  $_CN(4) calculateDimension
-$_TMP(mode_1) end
-unset _TMP(mode_1)
-pw::Application markUndoLevel {Create 2 Point Connector}
-
-set _TMP(mode_1) [pw::Application begin Create]
-  set _TMP(PW_1) [pw::SegmentSpline create]
-
-  lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  set _CN(5) [pw::Connector create]
-  $_CN(5) addSegment $_TMP(PW_1)
-  unset _TMP(PW_1)
-  $_CN(5) calculateDimension
-$_TMP(mode_1) end
-unset _TMP(mode_1)
-pw::Application markUndoLevel {Create 2 Point Connector}
-
-set _TMP(mode_1) [pw::Application begin Create]
-  set _TMP(PW_1) [pw::SegmentSpline create]
-
-  lset FarfieldPoint 0 [expr {1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  set _CN(6) [pw::Connector create]
-  $_CN(6) addSegment $_TMP(PW_1)
-  unset _TMP(PW_1)
-  $_CN(6) calculateDimension
-$_TMP(mode_1) end
-unset _TMP(mode_1)
-pw::Application markUndoLevel {Create 2 Point Connector}
-
-set _TMP(mode_1) [pw::Application begin Create]
-  set _TMP(PW_1) [pw::SegmentSpline create]
-
-  lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  lset FarfieldPoint 0 [expr {-1*$ActualFarfieldDistance}]
-  lset FarfieldPoint 1 [expr {-1*$ActualFarfieldDistance}]
-  $_TMP(PW_1) addPoint $FarfieldPoint
-
-  set _CN(7) [pw::Connector create]
-  $_CN(7) addSegment $_TMP(PW_1)
-  unset _TMP(PW_1)
-  $_CN(7) calculateDimension
-$_TMP(mode_1) end
-unset _TMP(mode_1)
-pw::Application markUndoLevel {Create 2 Point Connector}
+  pw::CutPlane refresh
+  pw::Application markUndoLevel Dimension
 
 
+  puts "Done!"
 
-set _TMP(PW_1) [pw::Collection create]
-$_TMP(PW_1) set [list $_CN(4) $_CN(6) $_CN(7) $_CN(5)]
-$_TMP(PW_1) do setDimensionFromSpacing -resetDistribution [expr {$FarfieldSpacing * $Chord}]
-$_TMP(PW_1) delete
-unset _TMP(PW_1)
-pw::CutPlane refresh
-pw::Application markUndoLevel Dimension
+}
 
+if { $FarfieldShape == "Circle" } {
 
-puts "Done!"
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentCircle create]
+    set Point [pwu::Vector3 set $ActualFarfieldDistance 0 0]
+    $_TMP(PW_1) addPoint $Point
+    $_TMP(PW_1) addPoint {0 0 0}
+    $_TMP(PW_1) setEndAngle 360 {0 0 1}
+    set _CN(4) [pw::Connector create]
+    $_CN(4) addSegment $_TMP(PW_1)
+    $_CN(4) calculateDimension
+    unset _TMP(PW_1)
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create Connector}
 
+}
 
 #-------------------------------------------------------------------------------
 
 
 puts "Creating mesh..."
 
-set _TMP(mode_1) [pw::Application begin Create]
-  set Farfield [pw::Edge create]
-  $Farfield addConnector $_CN(6)
-  $Farfield addConnector $_CN(7)
-  $Farfield addConnector $_CN(4)
-  $Farfield addConnector $_CN(5)
-
-  set FarfieldMesh [pw::DomainUnstructured create]
-  $FarfieldMesh addEdge $Farfield
-  set FarfieldProj [$FarfieldMesh getDefaultProjectDirection]
-
+  # I have to check if the orientation of the airfoil is correct or not
   set Airfoil [pw::Edge create]
   $Airfoil addConnector [lindex [lindex $Connectors 0] 1]
 
@@ -133,25 +144,51 @@ set _TMP(mode_1) [pw::Application begin Create]
     $Airfoil addConnector $con
   }
 
-  set AirfoilMesh [pw::DomainUnstructured create]
-  $AirfoilMesh addEdge $Airfoil
+  set AirfoilMesh_ToDelete [pw::DomainUnstructured create]
+  $AirfoilMesh_ToDelete addEdge $Airfoil
 
-  set AirfoilProj [$AirfoilMesh getDefaultProjectDirection]
-  set isReverse false
+  set AirfoilProj [$AirfoilMesh_ToDelete getDefaultProjectDirection]
+
+
+  # Then check if Farfield and Airfoil have the same orientation or not.
+  # If yes, reverse the farfield
+
+  set Farfield [pw::Edge create]
+
+  if { $FarfieldShape == "Square" } {
+    $Farfield addConnector $_CN(6)
+    $Farfield addConnector $_CN(7)
+    $Farfield addConnector $_CN(4)
+    $Farfield addConnector $_CN(5)
+  }
+
+  if { $FarfieldShape == "Circle" } {
+    $Farfield addConnector $_CN(4)
+  }
+
+  set FarfieldMesh_ToDelete [pw::DomainUnstructured create]
+  $FarfieldMesh_ToDelete addEdge $Farfield
+  set FarfieldProj [$FarfieldMesh_ToDelete getDefaultProjectDirection]
+  set FarfieldReverse false
   if {[lindex $AirfoilProj 2] == [lindex $FarfieldProj 2]} {
-    set isReverse true
+    set FarfieldReverse true
   }
 
-  pw::Entity delete [list $AirfoilMesh]
-  pw::Entity delete [list $FarfieldMesh]
-  unset Farfield
-  unset Airfoil
+  $AirfoilMesh_ToDelete delete
+  $FarfieldMesh_ToDelete delete
 
   set Farfield [pw::Edge create]
-  $Farfield addConnector $_CN(6)
-  $Farfield addConnector $_CN(7)
-  $Farfield addConnector $_CN(4)
-  $Farfield addConnector $_CN(5)
+
+  if { $FarfieldShape == "Square" } {
+    $Farfield addConnector $_CN(6)
+    $Farfield addConnector $_CN(7)
+    $Farfield addConnector $_CN(4)
+    $Farfield addConnector $_CN(5)
+  }
+
+  if { $FarfieldShape == "Circle" } {
+    $Farfield addConnector $_CN(4)
+  }
 
   set Airfoil [pw::Edge create]
   $Airfoil addConnector [lindex [lindex $Connectors 0] 1]
@@ -161,20 +198,19 @@ set _TMP(mode_1) [pw::Application begin Create]
     $Airfoil addConnector $con
   }
 
-  if {$isReverse} {
-    $Airfoil reverse
+  if { $FarfieldReverse } {
+    $Farfield reverse
   }
+
 
   set ActualMesh [pw::DomainUnstructured create]
   $ActualMesh addEdge $Farfield
   $ActualMesh addEdge $Airfoil
 
 
+
   # unset Airfoil
   unset Farfield
-$_TMP(mode_1) end
-unset _TMP(mode_1)
-pw::Application markUndoLevel {Assemble Domain}
 
 
 set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
@@ -211,10 +247,19 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
     $_TMP(PW_1) setAdaptation Off
     $_TMP(PW_1) setValue $InitialSpacing
 
+    unset _TMP(PW_1)
+
+  }
+
 
     set _TMP(PW_2) [pw::TRexCondition create]
     unset _TMP(PW_2)
-    set _TMP(PW_2) [pw::TRexCondition getByName bc-3]
+    if {$Euler == "OFF"} {
+      set _TMP(PW_2) [pw::TRexCondition getByName bc-3]
+    } else {
+      set _TMP(PW_2) [pw::TRexCondition getByName bc-2]
+    }
+
     $_TMP(PW_2) setName Ice
 
     set iCon 0
@@ -232,17 +277,21 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
       set iCon [expr {$iCon+1}]
     }
 
-    $_TMP(PW_2) setConditionType Wall
     $_TMP(PW_2) setAdaptation On
+
+  if {$Euler == "OFF"} {
+    $_TMP(PW_2) setConditionType Wall
     $_TMP(PW_2) setValue $InitialSpacing
+  }
 
-
+  if {$Euler == "OFF"} {
     $ActualMesh setUnstructuredSolverAttribute TRexGrowthRate $GrowthRateBL
     $ActualMesh setUnstructuredSolverAttribute TRexCellType $CellTypeBL
-
-    unset _TMP(PW_1)
-
   }
+
+
+
+
 
   $ActualMesh setSizeFieldDecay $BoundaryDecay
   $ActualMesh setUnstructuredSolverAttribute Algorithm $AlgorithmSurface
@@ -275,6 +324,9 @@ if {$TERefinement == "ON"} {
   set TEPointFirst [extractPointFromLine [lindex $LinesConn2TE 0] $Connectors]
   set TEPointSecond [extractPointFromLine [lindex $LinesConn2TE 1] $Connectors]
   set TESpacing [extractTESpacing [lindex $LinesConn2TE 0] $Connectors]
+
+  puts $TEPointFirst
+  puts $TEPointSecond
 
 
   set TEDirection [pwu::Vector3 subtract $TEPointFirst $TEPointSecond]

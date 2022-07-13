@@ -29,6 +29,9 @@ foreach line $data {
      } elseif {[lindex $words 0]=="Is2Spline="} {
        set Is2Spline [extractVectorSettings $words]
        # puts $Is2Spline
+     } elseif {[lindex $words 0]=="AirfoilOrientation="} {
+       set AirfoilOrientation [lindex $words 1]
+       # puts $AirfoilOrientation
      }
 
 
@@ -111,6 +114,16 @@ if {$Euler == "ON"} {
 
 
 if {$MeshStrategy == "Unstructured"} {
+
+  foreach line $data {
+    set words [split $line " "]
+    if {[lindex $words 0]== "FarfieldShape=" } {
+      set FarfieldShape [lindex $words 1]
+      # puts $AirfoilSpacingsFun
+    }
+  }
+
+  pw::DomainUnstructured setInitializeInterior 0
 
   if {$Euler == "OFF"} {
     foreach line $data {

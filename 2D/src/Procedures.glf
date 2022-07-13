@@ -303,7 +303,7 @@ proc checkConnectorSpacings { AirfoilEdge Connectors } {
       set connection "End_Begin"
 
       # Set tolerance for equality
-      set toll 1e-7
+      set toll 1e-4
       if {[pwu::Vector3 equal -tolerance $toll $beginPoint1 $endPoint2] } {
         # Set the connection to be Begin of the first one -> End of the second one
         set connection "Begin_End"
