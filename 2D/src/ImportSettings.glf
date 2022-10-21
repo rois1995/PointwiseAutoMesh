@@ -296,9 +296,9 @@ for {set i 0} {$i < $NLines} {incr i} {
       lappend SpacingType $SpacingTypeEnd
       # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
 
-      set SpacingBegin [lindex $Spacings 1]
-      set SpacingMid [lindex $Spacings 3]
-      set SpacingEnd [lindex $Spacings 5]
+      set SpacingBegin [expr {[lindex $Spacings 1] * $Chord }]
+      set SpacingMid [expr {[lindex $Spacings 3] * $Chord }]
+      set SpacingEnd [expr {[lindex $Spacings 5] * $Chord }]
       lappend SpacingValue $SpacingBegin
       lappend SpacingValue $SpacingMid
       lappend SpacingValue $SpacingEnd
@@ -322,9 +322,9 @@ for {set i 0} {$i < $NLines} {incr i} {
       lappend SpacingType $SpacingTypeEnd
       # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
 
-      set SpacingBegin [lindex $Spacings 1]
-      set SpacingMid [lindex $Spacings 3]
-      set SpacingEnd [lindex $Spacings 5]
+      set SpacingBegin [expr {[lindex $Spacings 1] * $Chord }]
+      set SpacingMid [expr {[lindex $Spacings 3] * $Chord }]
+      set SpacingEnd [expr {[lindex $Spacings 5] * $Chord }]
       lappend SpacingValue $SpacingBegin
       lappend SpacingValue $SpacingMid
       lappend SpacingValue $SpacingEnd
@@ -355,7 +355,7 @@ for {set i 0} {$i < $NLines} {incr i} {
       # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
 
       set Angle [lindex $Spacings 1]
-      set maxSpacing [lindex $Spacings 3]
+      set maxSpacing [expr {[lindex $Spacings 3] * $Chord }]
       lappend SpacingValue $Angle
       lappend SpacingValue $maxSpacing
       # set Spacing {$SpacingBegin $SpacingEnd}
@@ -381,9 +381,9 @@ for {set i 0} {$i < $NLines} {incr i} {
       lappend SpacingType $SpacingTypeEnd
       # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
 
-      set SpacingBegin [lindex $Spacings 1]
-      set SpacingMid [lindex $Spacings 3]
-      set SpacingEnd [lindex $Spacings 5]
+      set SpacingBegin [expr {[lindex $Spacings 1] * $Chord }]
+      set SpacingMid [expr {[lindex $Spacings 3] * $Chord }]
+      set SpacingEnd [expr {[lindex $Spacings 5] * $Chord }]
       lappend SpacingValue $SpacingBegin
       lappend SpacingValue $SpacingMid
       lappend SpacingValue $SpacingEnd

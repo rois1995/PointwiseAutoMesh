@@ -158,7 +158,7 @@ if {!$UseFileDistribution} {
           lappend Spacings $BeginSpacing
           lappend Spacings $EndSpacing
           set MidSpacing [lindex $SpacFun 1]
-          set MidSpacing [expr {$MidSpacing * $Chord}]
+          set MidSpacing $MidSpacing
           set GrowthRates [lindex $con 3]
 
           # puts $connector
@@ -275,7 +275,7 @@ if {!$UseFileDistribution} {
       lappend Spacings $BeginSpacing
       lappend Spacings $EndSpacing
       set MidSpacing [lindex $SpacFun 1]
-      set MidSpacing [expr {$MidSpacing * $Chord}]
+      set MidSpacing $MidSpacing
       set GrowthRates [lindex $con 3]
 
       # puts $connector
