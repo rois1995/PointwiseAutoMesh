@@ -6,6 +6,7 @@ package require PWI_Glyph 4.18.4
 set _TMP(PW_2) [pw::BoundaryCondition create]
 pw::Application markUndoLevel {Create BC}
 set _TMP(PW_3) [pw::BoundaryCondition getByName bc-2]
+$_TMP(PW_3) setName Farfield
 unset _TMP(PW_2)
 
 
@@ -18,6 +19,24 @@ if {$MeshStrategy == "Unstructured"} {
   if { $FarfieldShape == "Circle" } {
     $_TMP(PW_3) apply [list [list $ActualMesh $_CN(4)]]
   }
+
+  if {$FarfieldShape == "Gallery" } {
+
+    $_TMP(PW_3) setName GalleryWalls
+
+    set Outlet [pw::BoundaryCondition create]
+    set Outlet [pw::BoundaryCondition getByName bc-3]
+    $Outlet setName Outlet
+    set Inlet [pw::BoundaryCondition create]
+    set Inlet [pw::BoundaryCondition getByName bc-4]
+    $Inlet setName Inlet
+
+    $_TMP(PW_3) apply [list [list $ActualMesh $_CN(4)] [list $ActualMesh $_CN(6)]]
+    $Outlet apply [list [list $ActualMesh $_CN(5)]]
+    $Inlet apply [list [list $ActualMesh $_CN(7)]]
+
+  }
+
   pw::Application markUndoLevel {Set BC}
 
 }
@@ -30,7 +49,6 @@ if {$MeshStrategy == "Structured"} {
 
 }
 
-$_TMP(PW_3) setName Farfield
 pw::Application markUndoLevel {Name BC}
 
 unset _TMP(PW_3)
@@ -92,8 +110,10 @@ if { $OneBoundaryTag == "true" } {
   # unset _TMP(mode_1)
   # pw::Application markUndoLevel Distribute
 
-
   set BCName "bc-3"
+  if { $MeshStrategy == "Unstructured" && $FarfieldShape == "Gallery" } {
+      set BCName "bc-5"
+  }
   set TMP [pw::BoundaryCondition create]
   pw::Application markUndoLevel {Create BC}
   set TMP_1 [pw::BoundaryCondition getByName $BCName]
@@ -111,6 +131,9 @@ if { $OneBoundaryTag == "true" } {
 
 if { $OneBoundaryTag == "false" } {
   set i 3
+  if { $MeshStrategy == "Unstructured" && $FarfieldShape == "Gallery" } {
+      set i 5
+  }
   foreach Con $Connectors {
 
     set BCName "bc-"

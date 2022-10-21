@@ -50,15 +50,6 @@ foreach line $data {
      }
 
 
-     # Spacings definitions
-     if {[lindex $words 0]=="SpacingsFun="} {
-       set AirfoilSpacingsFun [extractVectorSettings $words]
-       # puts $AirfoilSpacingsFun
-     } elseif {[lindex $words 0]=="GrowthRates="} {
-       set AirfoilGrowthRates [extractVectorSettings $words]
-       # puts $AirfoilGrowthRates
-     }
-
 
      # Trailing edge definitions
      if {[lindex $words 0]=="LinesConn2TE="} {
@@ -72,11 +63,13 @@ foreach line $data {
      }
 
 
-     # Farfield parameters
-     if {[lindex $words 0]=="FarfieldDistance="} {
-      set FarfieldDistance [lindex $words 1]
-     } elseif {[lindex $words 0]=="FarfieldSpacing="} {
-      set FarfieldSpacing [lindex $words 1]
+     # Spacings definitions
+     if {[lindex $words 0]=="SpacingsFun="} {
+       set AirfoilSpacingsFun [extractVectorSettings $words]
+       # puts $AirfoilSpacingsFun
+     } elseif {[lindex $words 0]=="GrowthRates="} {
+       set AirfoilGrowthRates [extractVectorSettings $words]
+       # puts $AirfoilGrowthRates
      }
 
 
@@ -128,9 +121,49 @@ if {$MeshStrategy == "Unstructured"} {
     set words [split $line " "]
     if {[lindex $words 0]== "FarfieldShape=" } {
       set FarfieldShape [lindex $words 1]
-      # puts $AirfoilSpacingsFun
     }
   }
+
+  # If Circle or Square farfield, then I need the farfield spacing and the farfield distance
+
+  if { $FarfieldShape == "Circle" || $FarfieldShape == "Square" } {
+    foreach line $data {
+      set words [split $line " "]
+      # Farfield parameters
+      if {[lindex $words 0]=="FarfieldDistance="} {
+       set FarfieldDistance [lindex $words 1]
+      } elseif {[lindex $words 0]=="FarfieldSpacing="} {
+       set FarfieldSpacing [lindex $words 1]
+      }
+    }
+  }
+
+  # If Gallery farfield, then I need the farfield spacing and the extrema of the gallery
+  if { $FarfieldShape == "Gallery" } {
+    foreach line $data {
+      set words [split $line " "]
+      # Farfield parameters
+      if {[lindex $words 0]=="GalleryExtrema="} {
+       set GalleryExtrema [extractVectorSettings $words]
+      } elseif {[lindex $words 0]=="FarfieldSpacing="} {
+       set FarfieldSpacing [lindex $words 1]
+      } elseif {[lindex $words 0]=="FarfieldBC="} {
+       set FarfieldBC [lindex $words 1]
+      }
+    }
+
+    if { $FarfieldBC == "NS" } {
+      foreach line $data {
+        set words [split $line " "]
+        # Farfield parameters
+        if {[lindex $words 0]=="FarfieldInitialSpacing="} {
+         set FarfieldInitialSpacing [lindex $words 1]
+        }
+      }
+    }
+
+  }
+
 
   pw::DomainUnstructured setInitializeInterior 0
 
@@ -197,6 +230,17 @@ if {$MeshStrategy == "Unstructured"} {
 
     }
   }
+}
+
+if {$MeshStrategy == "Structured"} {
+
+  foreach line $data {
+    set words [split $line " "]
+    if {[lindex $words 0]=="FarfieldDistance="} {
+     set FarfieldDistance [lindex $words 1]
+    }
+  }
+
 }
 
 if {$SavePointwiseFile == "ON"} {

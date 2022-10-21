@@ -16,7 +16,10 @@ lappend FarfieldPoint 0
 lappend FarfieldPoint 0
 lset FarfieldPoint 2 0
 
-set ActualFarfieldDistance [expr {$FarfieldDistance * $Chord}]
+if { $FarfieldShape == "Circle" || $FarfieldShape == "Square" } {
+  set ActualFarfieldDistance [expr {$FarfieldDistance * $Chord}]
+}
+
 
 if { $FarfieldShape == "Square" } {
 
@@ -130,6 +133,112 @@ if { $FarfieldShape == "Circle" } {
 
 }
 
+if { $FarfieldShape == "Gallery" } {
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    set UpperLeft_X [lindex $GalleryExtrema 0]
+    set UpperLeft_Y [lindex $GalleryExtrema 1]
+
+    set UpperRight_X [lindex $GalleryExtrema 2]
+    set UpperRight_Y [lindex $GalleryExtrema 3]
+
+    set LowerRight_X [lindex $GalleryExtrema 4]
+    set LowerRight_Y [lindex $GalleryExtrema 5]
+
+    set LowerLeft_X [lindex $GalleryExtrema 6]
+    set LowerLeft_Y [lindex $GalleryExtrema 7]
+
+    lset FarfieldPoint 0 $UpperLeft_X
+    lset FarfieldPoint 1 $UpperLeft_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 $UpperRight_X
+    lset FarfieldPoint 1 $UpperRight_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(4) [pw::Connector create]
+    $_CN(4) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(4) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 $UpperRight_X
+    lset FarfieldPoint 1 $UpperRight_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 $LowerRight_X
+    lset FarfieldPoint 1 $LowerRight_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(5) [pw::Connector create]
+    $_CN(5) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(5) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 $LowerRight_X
+    lset FarfieldPoint 1 $LowerRight_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 $LowerLeft_X
+    lset FarfieldPoint 1 $LowerLeft_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(6) [pw::Connector create]
+    $_CN(6) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(6) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+  set _TMP(mode_1) [pw::Application begin Create]
+    set _TMP(PW_1) [pw::SegmentSpline create]
+
+    lset FarfieldPoint 0 $LowerLeft_X
+    lset FarfieldPoint 1 $LowerLeft_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    lset FarfieldPoint 0 $UpperLeft_X
+    lset FarfieldPoint 1 $UpperLeft_Y
+    $_TMP(PW_1) addPoint $FarfieldPoint
+
+    set _CN(7) [pw::Connector create]
+    $_CN(7) addSegment $_TMP(PW_1)
+    unset _TMP(PW_1)
+    $_CN(7) calculateDimension
+  $_TMP(mode_1) end
+  unset _TMP(mode_1)
+  pw::Application markUndoLevel {Create 2 Point Connector}
+
+
+
+  set _TMP(PW_1) [pw::Collection create]
+  $_TMP(PW_1) set [list $_CN(4) $_CN(6) $_CN(7) $_CN(5)]
+  $_TMP(PW_1) do setDimensionFromSpacing -resetDistribution [expr {$FarfieldSpacing * $Chord}]
+  $_TMP(PW_1) delete
+  unset _TMP(PW_1)
+  pw::CutPlane refresh
+  pw::Application markUndoLevel Dimension
+
+
+  puts "Done!"
+
+
+}
+
 #-------------------------------------------------------------------------------
 
 
@@ -155,7 +264,7 @@ puts "Creating mesh..."
 
   set Farfield [pw::Edge create]
 
-  if { $FarfieldShape == "Square" } {
+  if { $FarfieldShape == "Square" || $FarfieldShape == "Gallery" } {
     $Farfield addConnector $_CN(6)
     $Farfield addConnector $_CN(7)
     $Farfield addConnector $_CN(4)
@@ -179,7 +288,7 @@ puts "Creating mesh..."
 
   set Farfield [pw::Edge create]
 
-  if { $FarfieldShape == "Square" } {
+  if { $FarfieldShape == "Square" || $FarfieldShape == "Gallery" } {
     $Farfield addConnector $_CN(6)
     $Farfield addConnector $_CN(7)
     $Farfield addConnector $_CN(4)
@@ -282,11 +391,51 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
   if {$Euler == "OFF"} {
     $_TMP(PW_2) setConditionType Wall
     $_TMP(PW_2) setValue $InitialSpacing
-  }
 
-  if {$Euler == "OFF"} {
     $ActualMesh setUnstructuredSolverAttribute TRexGrowthRate $GrowthRateBL
     $ActualMesh setUnstructuredSolverAttribute TRexCellType $CellTypeBL
+
+    if { $FarfieldShape == "Gallery"} {
+      if { $FarfieldBC == "NS" } {
+        set WallGallery [pw::TRexCondition create]
+        set WallGallery [pw::TRexCondition getByName bc-4]
+        $WallGallery setName GalleryWalls
+        $WallGallery setConditionType Wall
+        $WallGallery setValue $FarfieldInitialSpacing
+        if { $FarfieldInitialSpacing == "Same" } {
+            $WallGallery setValue $InitialSpacing
+        }
+
+        if { [catch {$WallGallery apply [list [list $ActualMesh $_CN(4) Same]] } ] } {
+          $WallGallery apply [list [list $ActualMesh $_CN(4) Opposite]]
+        } else {
+          $WallGallery apply [list [list $ActualMesh $_CN(4) Same]]
+        }
+        if { [catch {$WallGallery apply [list [list $ActualMesh $_CN(6) Same]] } ] } {
+          $WallGallery apply [list [list $ActualMesh $_CN(6) Opposite]]
+        } else {
+          $WallGallery apply [list [list $ActualMesh $_CN(6) Same]]
+        }
+
+
+        set WallMatch [pw::TRexCondition create]
+        set WallMatch [pw::TRexCondition getByName bc-5]
+        $WallMatch setName GalleryMatch
+        $WallMatch setConditionType Match
+
+        if { [catch {$WallMatch apply [list [list $ActualMesh $_CN(5) Same]] } ] } {
+          $WallMatch apply [list [list $ActualMesh $_CN(5) Opposite]]
+        } else {
+          $WallMatch apply [list [list $ActualMesh $_CN(5) Same]]
+        }
+        if { [catch {$WallMatch apply [list [list $ActualMesh $_CN(7) Same]] } ] } {
+          $WallMatch apply [list [list $ActualMesh $_CN(7) Opposite]]
+        } else {
+          $WallMatch apply [list [list $ActualMesh $_CN(7) Same]]
+        }
+      }
+    }
+
   }
 
 
