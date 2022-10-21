@@ -18,7 +18,7 @@ Example of multi-line airfoil unstructured mesh
 Example of quad-dominant Euler mesh
 ![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/EulerMesh.png)
 
-Example of quad-dominant Euler mesh
+Example of Wind Tunnel mesh
 ![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/WindTunnelModel.png)
 
 ## Pre-requisites
