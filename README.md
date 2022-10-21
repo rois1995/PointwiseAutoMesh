@@ -6,7 +6,8 @@ Glyph scripts for automatic meshing of 2D profiles through Pointwise
 2. Creation of both Euler and Navier-Stokes (with boundary layer) meshes
 3. Create Unstructured and Structured meshes in .su2 and .cgns format
 4. Outputs some important mesh quality metrics (number of cells, skewness etc..) as min and max values both to screen and to a file
-5. Possibility of including multi-element airfoils
+5. Possibility of including multi-line airfoils
+6. Create mesh with wind Tunnel walls
 
 Example of structured mesh:
 ![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/StructuredMesh.png)
@@ -16,6 +17,9 @@ Example of multi-line airfoil unstructured mesh
 
 Example of quad-dominant Euler mesh
 ![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/EulerMesh.png)
+
+Example of quad-dominant Euler mesh
+![alt text](https://github.com/rois1995/PointwiseAutoMesh/blob/main/2D/WindTunnelModel.png)
 
 ## Pre-requisites
 Pointwise software has to be installed on your machine. Version 18.4 is required. 
