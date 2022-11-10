@@ -83,6 +83,33 @@ switch $MeshFormat {
     $_TMP(mode_1) end
     unset _TMP(mode_1)
   }
+  GMSH {
+    set MeshExtension ".msh"
+
+    pw::Application setCAESolver Gmsh 2
+
+    set MeshFilename $path$MeshName$MeshExtension
+
+    set _TMP(mode_1) [pw::Application begin CaeExport [pw::Entity sort [list $ActualMesh]]]
+      $_TMP(mode_1) initialize -strict -type CAE $MeshFilename
+      $_TMP(mode_1) setAttribute FilePrecision Double
+      $_TMP(mode_1) verify
+      $_TMP(mode_1) write
+    $_TMP(mode_1) end
+    unset _TMP(mode_1)
+  }
+  WRL {
+    set MeshExtension ".wrl"
+
+    set MeshFilename $path$MeshName$MeshExtension
+
+    set _TMP(mode_1) [pw::Application begin GridExport [pw::Entity sort [list $ActualMesh]]]
+      $_TMP(mode_1) initialize -strict -type VRML97 $MeshFilename
+      $_TMP(mode_1) verify
+      $_TMP(mode_1) write
+    $_TMP(mode_1) end
+    unset _TMP(mode_1)
+  }
   default {
 
     puts "Mesh format $MeshFormat is unknown! Defaulting to CGNS with default options!"
