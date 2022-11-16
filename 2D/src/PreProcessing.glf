@@ -5,6 +5,80 @@ package require PWI_Glyph 4.18.4
 puts "Define connectors spacings..."
 
 
+# Now check if airfoil orientation is as requested
+
+# First of all rotate every connector such that a connector starts where the previous one ends
+
+# First of all I create the airfil edge
+set Airfoil [pw::Edge create]
+$Airfoil addConnector [lindex [lindex $Connectors 0] 1]
+
+set  completion [findEdgeCompletion $Airfoil]
+foreach con $completion {
+  $Airfoil addConnector $con
+}
+
+
+
+
+for {set IthCon 2} {$IthCon <= [$Airfoil getConnectorCount]} {incr IthCon} {
+
+    # puts $IthCon
+
+    set ConSucc [$Airfoil getConnector $IthCon]
+    set ConPrev [$Airfoil getConnector [expr {$IthCon -1}]]
+
+    set StartPointSucc [ $ConSucc getXYZ -parameter 0.0]
+    set EndPointPrec [ $ConPrev getXYZ -parameter 1.0]
+    set Distance [PPDistance $StartPointSucc $EndPointPrec]
+    # puts $ConPrev
+    # puts $ConSucc
+    if { $Distance > 1e-8 } {
+      # puts $StartPointSucc
+      # puts $EndPointPrec
+      $ConSucc setOrientation IMaximum
+      set StartPointSucc [ $ConSucc getXYZ -parameter 0.0]
+      # puts $StartPointSucc
+    }
+
+}
+
+
+# I have to check if the orientation of the airfoil is correct or not
+set Airfoil [pw::Edge create]
+$Airfoil addConnector [lindex [lindex $Connectors 0] 1]
+
+set  completion [findEdgeCompletion $Airfoil]
+foreach con $completion {
+  $Airfoil addConnector $con
+}
+
+set AirfoilMesh_ToDelete [pw::DomainUnstructured create]
+$AirfoilMesh_ToDelete addEdge $Airfoil
+
+set AirfoilProj [$AirfoilMesh_ToDelete getDefaultProjectDirection]
+set AirfoilReverse false
+set hasBeenReversed false
+
+# Set the desired airfoil projection as the counterclockwise value (1)
+set DesiredAirfoilProj 1
+if { $AirfoilOrientation == "Clockwise" } {
+  set DesiredAirfoilProj -1
+}
+
+
+if {[expr {[lindex $AirfoilProj 2] * $DesiredAirfoilProj}] == -1} {
+
+  for {set IthCon 1} {$IthCon <= [$Airfoil getConnectorCount]} {incr IthCon} {
+    [$Airfoil getConnector $IthCon] setOrientation IMaximum
+  }
+
+}
+
+
+$AirfoilMesh_ToDelete delete
+
+
 if {!$UseFileDistribution} {
 
   set i 0
@@ -36,6 +110,7 @@ if {!$UseFileDistribution} {
         set BeginSpacing [lindex $SpaceTypes 0]
       }
 
+
       # Extract End spacings
       if {[lindex $SpaceTypes 2] == "Angle"} {
         set EndSpacing [extractAngularSpacing $Con [lindex $SpaceValues 2] "End"]
@@ -44,6 +119,7 @@ if {!$UseFileDistribution} {
       } else {
         set EndSpacing [lindex $SpaceTypes 2]
       }
+
 
       set bufferList [list]
       lappend bufferList $BeginSpacing
@@ -116,6 +192,8 @@ if {!$UseFileDistribution} {
     lappend bufferListBig $bufferList
     lappend ConSpacingsAll $bufferListBig
 
+    # puts $bufferListBig
+
     set i [expr {$i+1}]
   }
 
@@ -133,20 +211,16 @@ if {!$UseFileDistribution} {
     set SpacFun [lindex $con 2]
 
 
-
-
     # Begin
     set SpacFunBegin [lindex $SpacFun 0]
-    set SpacFunBegin [split $SpacFunBegin "_"]
 
     if {[lindex $con 1] != "Shape"} {
 
 
       # End
       set SpacFunEnd [lindex $SpacFun 2]
-      set SpacFunEnd [split $SpacFunEnd "_"]
 
-      if {[llength $SpacFunBegin] == 1 && [llength $SpacFunEnd] == 1} {
+      if { $SpacFunBegin != "ToMakeEqual" && $SpacFunEnd != "ToMakeEqual" } {
 
         set BeginSpacing $SpacFunBegin
         set EndSpacing $SpacFunEnd
@@ -157,6 +231,10 @@ if {!$UseFileDistribution} {
           set Spacings [list]
           lappend Spacings $BeginSpacing
           lappend Spacings $EndSpacing
+
+          # puts $connector
+          # puts $Spacings
+
           set MidSpacing [lindex $SpacFun 1]
           set MidSpacing $MidSpacing
           set GrowthRates [lindex $con 3]
@@ -165,6 +243,9 @@ if {!$UseFileDistribution} {
           # puts $Spacings
           # puts $MidSpacing
           setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
+
+
+
         } elseif {[lindex $con 1] == "Tanh"} {
 
           set connector [lindex $con 0]
@@ -185,6 +266,7 @@ if {!$UseFileDistribution} {
       set BeginSpacing $SpacFunBegin
       set Angle $BeginSpacing
 
+
       setShapeDistr $connector $Angle
 
       set ConSpacings2Complete [lreplace $ConSpacings2Complete $j $j]
@@ -197,115 +279,6 @@ if {!$UseFileDistribution} {
   }
 
 
-  # puts $ConSpacings2Complete
-
-
-  # Now assign spacing values with their functions
-  foreach con $ConSpacings2Complete {
-
-    # Extract spacing functions
-    set SpacFun [lindex $con 2]
-
-
-    # Begin
-    set SpacFunBegin [lindex $SpacFun 0]
-    set SpacFunBegin [split $SpacFunBegin "_"]
-
-
-    # Check if it is in the form ConName_Begin or ConName_End
-    if {[llength $SpacFunBegin] > 1 } {
-
-      set conName2Find [lindex $SpacFunBegin 0]
-      set whichSpacing [lindex $SpacFunBegin 1]
-
-      if {$whichSpacing == "Begin"} {
-        set whichSpacing 0
-      } elseif {$whichSpacing == "End"} {
-        set whichSpacing 2
-      }
-
-      # find the connector from which to take the spacing
-      foreach Line $ConSpacingsAll {
-        set conName [lindex $Line 0]
-        if { $conName2Find == $conName} {
-          set BeginSpacing [lindex [lindex $Line 1] $whichSpacing]
-        }
-      }
-
-    } else {
-      set BeginSpacing $SpacFunBegin
-    }
-
-
-    if {[lindex $con 1] != "Shape" } {
-
-      # End
-      set SpacFunEnd [lindex $SpacFun  2]
-      set SpacFunEnd [split $SpacFunEnd "_"]
-
-      # Check if it is in the form ConName_Begin or ConName_End
-      if {[llength $SpacFunEnd] > 1 } {
-
-        set conName2Find [lindex $SpacFunEnd 0]
-        set whichSpacing [lindex $SpacFunEnd 1]
-
-        if {$whichSpacing == "Begin"} {
-          set whichSpacing 0
-        } elseif {$whichSpacing == "End"} {
-          set whichSpacing 2
-        }
-
-        # find the connector from which to take the spacing
-        foreach Line $ConSpacingsAll {
-          set conName [lindex $Line 0]
-          if { $conName2Find == $conName} {
-            set EndSpacing [lindex [lindex $Line 1] $whichSpacing]
-          }
-        }
-
-      } else {
-        set EndSpacing [lindex [lindex $con 2] 2]
-      }
-    }
-
-    if {[lindex $con 1] == "Growth"} {
-
-      set connector [lindex $con 0]
-      set Spacings [list]
-      lappend Spacings $BeginSpacing
-      lappend Spacings $EndSpacing
-      set MidSpacing [lindex $SpacFun 1]
-      set MidSpacing $MidSpacing
-      set GrowthRates [lindex $con 3]
-
-      # puts $connector
-      # puts $Spacings
-      # puts $MidSpacing
-      setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
-    } elseif {[lindex $con 1] == "Tanh"} {
-
-      set connector [lindex $con 0]
-      set Spacings [list]
-      lappend Spacings $BeginSpacing
-      lappend Spacings $EndSpacing
-
-      setTanhDistr $connector $Spacings
-    }
-
-    # if {[lindex $con 1] == "Shape"} {
-    #
-    #   set connector [lindex $con 0]
-    #   set Angle $BeginSpacing
-    #
-    #   # puts $connector
-    #   # puts $Spacings
-    #   # puts $MidSpacing
-    #   setShapeDistr $connector $Angle
-    # }
-  }
-
-  set ConSpacings2Complete $ConSpacings2CompleteSaved
-
 }
 
 
@@ -316,9 +289,8 @@ if {!$UseFileDistribution} {
 
 
 
-# Now check if airfoil orientation is as requested
 
-# I have to check if the orientation of the airfoil is correct or not
+
 set Airfoil [pw::Edge create]
 $Airfoil addConnector [lindex [lindex $Connectors 0] 1]
 
@@ -327,64 +299,121 @@ foreach con $completion {
   $Airfoil addConnector $con
 }
 
-set AirfoilMesh_ToDelete [pw::DomainUnstructured create]
-$AirfoilMesh_ToDelete addEdge $Airfoil
+# Now set spacings of all of the other connectors
+if {!$UseFileDistribution} {
 
-set AirfoilProj [$AirfoilMesh_ToDelete getDefaultProjectDirection]
-set AirfoilReverse false
-set hasBeenReversed false
-if {[lindex $AirfoilProj 2] == 1 && $AirfoilOrientation == "Clockwise"} {
+  # foreach Couple $Connectors {
+  #   puts [lindex $Couple 0]
+  #   puts [lindex $Couple 1]
+  #   puts " "
+  # }
+  # for {set IthCon 1} {$IthCon <= [$Airfoil getConnectorCount]} {incr IthCon} {
+  #   puts [$Airfoil getConnector $IthCon]
+  # }
 
-  foreach ConCouple $Connectors {
-    [lindex $ConCouple 1] setOrientation IMaximum
+
+  # for {set i 0} {$i < [llength $ConSpacings2Complete]} {incr i} {
+  #   puts [lindex [lindex $ConSpacings2Complete $i] 0]
+  # }
+  # puts " "
+
+  for {set IthCon 1} {$IthCon <= [$Airfoil getConnectorCount]} {incr IthCon} {
+
+    # Search for the corresponding connector in the spacing vectors
+    set IthConOrigVector 0
+    set IsIn 0
+    for {set i 0} {$i < [llength $ConSpacings2Complete]} {incr i} {
+      # puts [$Airfoil getConnector $IthCon]
+      # puts [lindex [lindex $ConSpacings2Complete $i] 0]
+      if { [$Airfoil getConnector $IthCon] == [lindex [lindex $ConSpacings2Complete $i] 0]} {
+        set IthConOrigVector $i
+        set IsIn 1
+        set i [llength $ConSpacings2Complete]
+      }
+    }
+
+    # Check if the connector is yet to be set
+    if { $IsIn == 1} {
+      # puts " "
+
+      # puts [$Airfoil getConnector $IthCon]
+      # puts  [lindex [lindex $ConSpacings2Complete $IthConOrigVector] 0]
+      # puts " "
+      # puts " "
+
+      set Con [lindex $ConSpacings2Complete $IthConOrigVector]
+      # puts [lindex $Con 2]
+      # Begin Spacing
+      set BeginSpacing [lindex [lindex $Con 2] 0]
+      # puts $BeginSpacing
+      # Check if the spacing has to be taken from another connector
+      if { $BeginSpacing == "ToMakeEqual" } {
+        set IthConHere [expr {$IthCon - 1}]
+        if { $IthConHere == 0 } {
+          set IthConHere [$Airfoil getConnectorCount]
+        }
+        set PrevCon [$Airfoil getConnector $IthConHere]
+        set BeginSpacing [extractSpacing $PrevCon "End"]
+      }
+
+      set MidSpacing [lindex [lindex $Con 2] 1]
+
+      # End spacing
+      set EndSpacing [lindex [lindex $Con 2] 2]
+      # Check if the spacing has to be taken from another connector
+      if { $EndSpacing == "ToMakeEqual" } {
+        set IthConHere [expr {$IthCon + 1}]
+        if { $IthConHere > [$Airfoil getConnectorCount] } {
+          set IthConHere 1
+        }
+        set SucCon [$Airfoil getConnector $IthConHere]
+        set EndSpacing [extractSpacing $SucCon "Begin"]
+      }
+
+
+
+      set SpacType [lindex $Con 1]
+      if {$SpacType == "Growth"} {
+
+
+        set connector [lindex $Con 0]
+        set GrowthRates [lindex $Con 3]
+        set Spacings [list]
+        lappend Spacings $BeginSpacing
+        lappend Spacings $EndSpacing
+
+        # puts $connector
+        # puts $Spacings
+        # puts $MidSpacing
+        setGrowthDistr $connector $Spacings $GrowthRates $MidSpacing
+
+      } elseif {$SpacType == "Tanh"} {
+
+        set connector [lindex $Con 0]
+        set Spacings [list]
+        lappend Spacings $BeginSpacing
+        lappend Spacings $EndSpacing
+
+        setTanhDistr $connector $Spacings
+
+      }
+    }
   }
 
-  set hasBeenReversed true
+  # set ConSpacings2Complete $ConSpacings2CompleteSaved
 
-} elseif {[lindex $AirfoilProj 2] == -1 && $AirfoilOrientation == "CounterClockwise"} {
-  foreach ConCouple $Connectors {
-    [lindex $ConCouple 1] setOrientation IMaximum
-  }
-  set hasBeenReversed true
 }
 
-if {$hasBeenReversed} {
-  set Con2Mod 0
-  if {[lindex TEPointFirst 1] > [lindex TEPointSecond 1]} {
-    set Con2Mod 1
-  }
-  set Con [lindex $LinesConn2TE $Con2Mod]
-  set conName [split $Con "_"]
-  set Name [lindex $conName 0]
-  set whichSide [lindex $conName 1]
-  if {$whichSide == "Begin"} {
-    set whichSide "End"
-  } elseif {$whichSide == "End"} {
-    set whichSide "Begin"
-  }
-  set lowSpace "_"
-  set cose $Name$lowSpace$whichSide
-  set LinesConn2TE [lreplace $LinesConn2TE $Con2Mod $Con2Mod $cose]
 
-  set Con2Mod 1
-  if {[lindex TEPointFirst 1] > [lindex TEPointSecond 1]} {
-    set Con2Mod 1
-  }
-  set Con [lindex $LinesConn2TE $Con2Mod]
-  set conName [split $Con "_"]
-  set Name [lindex $conName 0]
-  set whichSide [lindex $conName 1]
-  if {$whichSide == "Begin"} {
-    set whichSide "End"
-  } elseif {$whichSide == "End"} {
-    set whichSide "Begin"
-  }
-  set lowSpace "_"
-  set cose $Name$lowSpace$whichSide
-  set LinesConn2TE [lreplace $LinesConn2TE $Con2Mod $Con2Mod $cose]
-}
+# set PointwiseFilename $path$PointwiseName
+# pw::Application save $PointwiseFilename
+#
+# a
 
 
-$AirfoilMesh_ToDelete delete
+
+# $AirfoilMesh_ToDelete delete
+
+
 
 puts "Done!"
