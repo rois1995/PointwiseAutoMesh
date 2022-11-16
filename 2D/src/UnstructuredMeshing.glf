@@ -131,6 +131,15 @@ if { $FarfieldShape == "Circle" } {
   unset _TMP(mode_1)
   pw::Application markUndoLevel {Create Connector}
 
+
+  set _TMP(PW_1) [pw::Collection create]
+  $_TMP(PW_1) set [list $_CN(4)]
+  $_TMP(PW_1) do setDimensionFromSpacing -resetDistribution [expr {$FarfieldSpacing * $Chord}]
+  $_TMP(PW_1) delete
+  unset _TMP(PW_1)
+  pw::CutPlane refresh
+  pw::Application markUndoLevel Dimension
+
 }
 
 if { $FarfieldShape == "Gallery" } {
@@ -443,8 +452,10 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
 
 
   $ActualMesh setSizeFieldDecay $BoundaryDecay
-  $ActualMesh setUnstructuredSolverAttribute Algorithm $AlgorithmSurface
+  $ActualMesh setSizeFieldBackgroundSpacing [expr {$FarfieldSpacing * $Chord}]
+  $ActualMesh setUnstructuredSolverAttribute EdgeMaximumLength Boundary
   $ActualMesh setUnstructuredSolverAttribute IsoCellType $CellType
+  $ActualMesh setUnstructuredSolverAttribute Algorithm $AlgorithmSurface
 
 $_TMP(mode_1) end
 unset _TMP(mode_1)
@@ -474,8 +485,8 @@ if {$TERefinement == "ON"} {
   set TEPointSecond [extractPointFromLine [lindex $LinesConn2TE 1] $Connectors]
   set TESpacing [extractTESpacing [lindex $LinesConn2TE 0] $Connectors]
 
-  puts $TEPointFirst
-  puts $TEPointSecond
+  # puts $TEPointFirst
+  # puts $TEPointSecond
 
 
   set TEDirection [pwu::Vector3 subtract $TEPointFirst $TEPointSecond]
