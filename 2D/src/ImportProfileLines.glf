@@ -58,11 +58,41 @@ foreach AirfoilLine $AirfoilLinesList {
 
     # Check if it has to be splined or not
     if {[lindex $AirfoilLine 1]} {
+
+      # First extract start and end points
+      set StartPoint [$Curve getXYZ -parameter 0.0]
+      set EndPoint [$Curve getXYZ -parameter 1.0]
+
+      # puts $StartPoint
+      # puts $EndPoint
+
       set _TMP(mode_1) [pw::Application begin Modify [list $Curve]]
-        $Curve spline
+        $Curve spline $Curve
       $_TMP(mode_1) end
       unset _TMP(mode_1)
       pw::Application markUndoLevel Spline
+
+      set StartPointNew [$Curve getXYZ -parameter 0.0]
+      set EndPointNew [$Curve getXYZ -parameter 1.0]
+
+      # puts $StartPointNew
+      # puts $EndPointNew
+
+      if { $StartPoint != $StartPointNew } {
+        puts "Start point has been modified"
+        set Segment [pw::SegmentSpline create]
+        $Segment addPoint $StartPoint
+        $Segment addPoint $StartPointNew
+        $Curve insertSegment 1 $Segment
+      }
+
+      if { $EndPoint != $EndPointNew } {
+        puts "End point has been modified"
+        set Segment [pw::SegmentSpline create]
+        $Segment addPoint $EndPointNew
+        $Segment addPoint $EndPoint
+        $Curve addSegment $Segment
+      }
     }
 
     # Create connector

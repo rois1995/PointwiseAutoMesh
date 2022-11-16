@@ -65,7 +65,7 @@ if { $OneBoundaryTag == "true" } {
     pw::Application markUndoLevel Solve
 
     if {!$UseFileDistribution} {
-      # Now that I have the mesh done and with the final spacings and the Airofil edge
+      # Now that I have the mesh done and with the final spacings and the Airfoil edge
       # with the connectors aligned in order, I can go through each of these and
       # check if the connector spacing at the point of intersection is equal or not
 
@@ -82,33 +82,10 @@ if { $OneBoundaryTag == "true" } {
   }
 
 
-  set OneBoundaryCon [list]
-  foreach Con $Connectors {
 
-    lappend OneBoundaryCon [lindex $Con 1]
+  set PointwiseFilename $path$PointwiseName
+  pw::Application save $PointwiseFilename
 
-  }
-
-  set _TMP(PW_1) [pw::Connector join -reject _TMP(ignored) -keepDistribution $OneBoundaryCon]
-  unset _TMP(ignored)
-  unset _TMP(PW_1)
-  pw::Application markUndoLevel Join
-
-  set OneBoundaryName "con-"
-  if { $MeshStrategy == "Structured" } {
-    set OneBoundaryName "con-1"
-  } else {
-    set NConn [llength $OneBoundaryCon]
-    set OneBoundaryName $OneBoundaryName$NConn
-
-  }
-
-  set OneBoundary [pw::GridEntity getByName $OneBoundaryName]
-  # set _TMP(mode_1) [pw::Application begin Modify [list $OneBoundary]]
-  #   $OneBoundary removeAllBreakPoints
-  # $_TMP(mode_1) end
-  # unset _TMP(mode_1)
-  # pw::Application markUndoLevel Distribute
 
   set BCName "bc-3"
   if { $MeshStrategy == "Unstructured" && $FarfieldShape == "Gallery" } {
@@ -122,8 +99,11 @@ if { $OneBoundaryTag == "true" } {
   $TMP_1 setName $OneBoundaryTagName
   pw::Application markUndoLevel {Name BC}
 
-  $TMP_1 apply [list [list $ActualMesh $OneBoundary]]
-  pw::Application markUndoLevel {Set BC}
+  foreach Con $Connectors {
+
+    $TMP_1 apply [list [list $ActualMesh [lindex $Con 1]]]
+
+  }
 
 
 
