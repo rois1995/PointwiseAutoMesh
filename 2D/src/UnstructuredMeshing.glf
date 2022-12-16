@@ -425,6 +425,7 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
         } else {
           $WallGallery apply [list [list $ActualMesh $_CN(6) Same]]
         }
+        $WallGallery setAdaptation On
 
 
         set WallMatch [pw::TRexCondition create]
@@ -442,6 +443,7 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
         } else {
           $WallMatch apply [list [list $ActualMesh $_CN(7) Same]]
         }
+        $WallMatch setAdaptation On
       }
     }
 

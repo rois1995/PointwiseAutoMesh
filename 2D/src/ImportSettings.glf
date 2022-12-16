@@ -383,7 +383,9 @@ for {set i 0} {$i < $NLines} {incr i} {
       set NValuesGrowthRates 1
 
       lappend SpacingType [lindex $Spacings $ValuesIterSpacings]
-      lappend SpacingValue [lindex $Spacings [expr {$ValuesIterSpacings+1}]]
+      set DummySpacing [lindex $Spacings [expr {$ValuesIterSpacings+1}]]
+      set DummySpacing [expr {$DummySpacing * $Chord}]
+      lappend SpacingValue $DummySpacing
 
       set GrBegin 0
       lappend GrowthRates 0
