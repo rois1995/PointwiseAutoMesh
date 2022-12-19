@@ -1,0 +1,15 @@
+# Output files
+*.su2
+*.pw
+*.cgns
+*.msh
+*.txt
+
+
+# Pointwise script files
+*.glf
+*/src
+
+
+# Test folders
+Prova

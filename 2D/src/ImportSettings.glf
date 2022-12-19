@@ -384,7 +384,9 @@ for {set i 0} {$i < $NLines} {incr i} {
 
       lappend SpacingType [lindex $Spacings $ValuesIterSpacings]
       set DummySpacing [lindex $Spacings [expr {$ValuesIterSpacings+1}]]
-      set DummySpacing [expr {$DummySpacing * $Chord}]
+      if {[lindex $Spacings $ValuesIterSpacings] == "MeanSpace"} {
+        set DummySpacing [expr {$DummySpacing * $Chord}]
+      }
       lappend SpacingValue $DummySpacing
 
       set GrBegin 0
