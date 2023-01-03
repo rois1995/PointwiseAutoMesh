@@ -362,7 +362,7 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
     }
 
     $_TMP(PW_1) setConditionType Wall
-    $_TMP(PW_1) setAdaptation Off
+    $_TMP(PW_1) setAdaptation On
     $_TMP(PW_1) setValue $InitialSpacing
 
     unset _TMP(PW_1)

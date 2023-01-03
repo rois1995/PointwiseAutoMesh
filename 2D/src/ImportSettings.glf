@@ -398,14 +398,22 @@ for {set i 0} {$i < $NLines} {incr i} {
 
       set SpacingTypeAngle [lindex $Spacings 0]
       set SpacingTypemaxSpacing [lindex $Spacings 2]
+      set SpacingTypeMaxGR [lindex $Spacings 4]
+      set SpacingTypeRefLevels [lindex $Spacings 6]
       lappend SpacingType $SpacingTypeAngle
       lappend SpacingType $SpacingTypemaxSpacing
+      lappend SpacingType $SpacingTypeMaxGR
+      lappend SpacingType $SpacingTypeRefLevels
       # set SpacingType {$SpacingTypeBegin $SpacingTypeEnd}
 
       set Angle [lindex $Spacings 1]
       set maxSpacing [expr {[lindex $Spacings 3] * $Chord }]
+      set SpacingTypeMaxGR [lindex $Spacings 5]
+      set SpacingTypeRefLevels [lindex $Spacings 7]
       lappend SpacingValue $Angle
       lappend SpacingValue $maxSpacing
+      lappend SpacingValue $SpacingTypeMaxGR
+      lappend SpacingValue $SpacingTypeRefLevels
       # set Spacing {$SpacingBegin $SpacingEnd}
 
       set GrBegin [lindex $AirfoilGrowthRates $ValuesIterGrowthRates]

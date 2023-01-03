@@ -26,7 +26,6 @@ if {!$UseFileDistribution} {
 
     if {$SpacingFun == "Shape"} {
 
-
       # Then create a new point cloud source
       set cloud [pw::SourcePointCloud create]
       set name "Refinement_"
@@ -36,8 +35,6 @@ if {!$UseFileDistribution} {
 
       set SpaceValues [lindex $AirfoilLine 5]
       set maxSpacing [lindex $SpaceValues 1]
-
-      puts $maxSpacing
 
       # First extract the distribution
       set ShapeDistr [extractDistr $Con]
@@ -77,9 +74,95 @@ if {!$UseFileDistribution} {
         }
       }
 
-      # puts [llength $srcPts]
-
       $cloud addPoints $srcPts
+
+      pw::Connector setDimensionFromSizeField -include $cloud -refineOnly $Con
+      
+      
+      # Now try to smooth the distribution
+      
+
+
+      set SpaceValues [lindex $AirfoilLine 5]
+      set maxSpacing [lindex $SpaceValues 1]
+
+
+      set MaxGR [lindex $SpaceValues 2]
+
+
+      set RefinementPasses [lindex $SpaceValues 3]
+
+      set Continue 1
+      set iRef 1
+
+      while { $Continue } {
+
+        
+        $cloud delete
+
+        set cloud [pw::SourcePointCloud create]
+        set name "New_Refinement_"
+        set name $name$Name
+        $cloud setName $name
+
+        set ShapeDistr [extractDistr $Con]
+
+        set srcPts [list]
+
+        set NPoints [llength $ShapeDistr]
+
+        set ToWrite "Refinement level: "
+        set ToWrite $ToWrite$iRef
+        puts $ToWrite
+
+        set ToWrite "NPoints Before: "
+        set ToWrite $ToWrite$NPoints
+        puts $ToWrite
+
+        for {set j 2} { $j < [expr {$NPoints-1}]} {incr j} {
+
+          set PointStart [lindex $ShapeDistr [expr {$j-2}]]
+          set PointStartSeg [lindex $ShapeDistr [expr {$j-1}]]
+          set PointEndSeg [lindex $ShapeDistr $j]
+          set PointEnd [lindex $ShapeDistr [expr {$j+1}]]
+          set Gap [PPDistance $PointEndSeg $PointStartSeg]
+          set GapBefore [PPDistance $PointStart $PointStartSeg]
+          set GapAfter [PPDistance $PointEnd $PointEndSeg]
+
+          set MaxGap [expr {$Gap * $MaxGR}]
+          if {$MaxGap > $maxSpacing} {
+            set MaxGap $maxSpacing
+          }
+
+          if { $GapBefore > $MaxGap } {
+            lappend srcPts [list $PointStartSeg $MaxGap 0.9]
+          }
+          if { $GapAfter > $MaxGap } {
+            lappend srcPts [list $PointEndSeg $MaxGap 0.9]
+          }
+          
+        }
+
+        $cloud addPoints $srcPts
+
+        pw::Connector setDimensionFromSizeField -include $cloud -refineOnly $Con
+
+
+        set ShapeDistr [extractDistr $Con]
+        set NPointsAfter [llength $ShapeDistr]
+
+        set ToWrite "NPoints After: "
+        set ToWrite $ToWrite$NPointsAfter
+        puts $ToWrite
+
+        puts " "
+
+        set iRef [expr {$iRef + 1}]
+        if { $iRef > $RefinementPasses || $NPoints == $NPointsAfter } {
+          set Continue 0
+        }
+      }
+
     }
 
     set i [expr {$i + 1}]
@@ -90,36 +173,5 @@ if {!$UseFileDistribution} {
       set InitialSpacing [expr {$InitialSpacing/2}]
     }
   }
-
-
-  # if {$SpacingFun != "Shape"} {
-  #
-  #   # Then create a new point cloud source
-  #   set cloud [pw::SourcePointCloud create]
-  #   set name "Refinement_"
-  #   set name $name$Name
-  #   $cloud setName $name
-  #
-  #   # First extract the distribution
-  #   set ShapeDistr [extractDistr $Con]
-  #
-  #   set srcPts [list]
-  #
-  #   set NPoints [llength $ShapeDistr]
-  #   # set NPoints [expr {$NPoints - 1}]
-  #
-  #
-  #   for {set j 1} { $j < $NPoints} {incr j} {
-  #     set PointStart [lindex $ShapeDistr [expr {$j-1}]]
-  #     set PointEnd [lindex $ShapeDistr $j]
-  #     set Gap [PPDistance $PointEnd $PointStart]
-  #     lappend srcPts [list $PointEnd $Gap 0.9]
-  #   }
-  #
-  #   # puts [llength $srcPts]
-  #
-  #   $cloud addPoints $srcPts
-  #
-  # }
 
 }
