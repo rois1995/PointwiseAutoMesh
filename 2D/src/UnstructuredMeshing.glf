@@ -410,9 +410,10 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
         set WallGallery [pw::TRexCondition getByName bc-4]
         $WallGallery setName GalleryWalls
         $WallGallery setConditionType Wall
-        $WallGallery setValue $FarfieldInitialSpacing
-        if { $FarfieldInitialSpacing == "Same" } {
+        set ActualGalleryInitialWallSpacing $FarfieldInitialSpacing
+        if { [catch {$WallGallery setValue $FarfieldInitialSpacing}] } {
             $WallGallery setValue $InitialSpacing
+            set ActualGalleryInitialWallSpacing $InitialSpacing
         }
 
         if { [catch {$WallGallery apply [list [list $ActualMesh $_CN(4) Same]] } ] } {
@@ -427,23 +428,25 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
         }
         $WallGallery setAdaptation On
 
+        # It seems like it has a poblem when I set adaptation on since it modifies the connector distribution
+        # without any reason
 
-        set WallMatch [pw::TRexCondition create]
-        set WallMatch [pw::TRexCondition getByName bc-5]
-        $WallMatch setName GalleryMatch
-        $WallMatch setConditionType Match
+        #set InletOutlet [pw::TRexCondition create]
+        #set InletOutlet [pw::TRexCondition getByName bc-5]
+        #$InletOutlet setName InletOutlet
 
-        if { [catch {$WallMatch apply [list [list $ActualMesh $_CN(5) Same]] } ] } {
-          $WallMatch apply [list [list $ActualMesh $_CN(5) Opposite]]
-        } else {
-          $WallMatch apply [list [list $ActualMesh $_CN(5) Same]]
-        }
-        if { [catch {$WallMatch apply [list [list $ActualMesh $_CN(7) Same]] } ] } {
-          $WallMatch apply [list [list $ActualMesh $_CN(7) Opposite]]
-        } else {
-          $WallMatch apply [list [list $ActualMesh $_CN(7) Same]]
-        }
-        $WallMatch setAdaptation On
+        #if { [catch {$InletOutlet apply [list [list $ActualMesh $_CN(5) Same]] } ] } {
+        #  $InletOutlet apply [list [list $ActualMesh $_CN(5) Opposite]]
+        #} else {
+        #  $InletOutlet apply [list [list $ActualMesh $_CN(5) Same]]
+        #}
+        #if { [catch {$InletOutlet apply [list [list $ActualMesh $_CN(7) Same]] } ] } {
+        #  $InletOutlet apply [list [list $ActualMesh $_CN(7) Opposite]]
+        #} else {
+        #  $InletOutlet apply [list [list $ActualMesh $_CN(7) Same]]
+        #}
+        #$InletOutlet setAdaptation On
+
       }
     }
 
@@ -455,13 +458,51 @@ set _TMP(mode_1) [pw::Application begin UnstructuredSolver [list $ActualMesh]]
 
   $ActualMesh setSizeFieldDecay $BoundaryDecay
   $ActualMesh setSizeFieldBackgroundSpacing [expr {$FarfieldSpacing * $Chord}]
-  $ActualMesh setUnstructuredSolverAttribute EdgeMaximumLength Boundary
+  #$ActualMesh setUnstructuredSolverAttribute EdgeMaximumLength Boundary
+  $ActualMesh setUnstructuredSolverAttribute EdgeMaximumLength [expr {$FarfieldSpacing * $Chord}]
   $ActualMesh setUnstructuredSolverAttribute IsoCellType $CellType
   $ActualMesh setUnstructuredSolverAttribute Algorithm $AlgorithmSurface
 
 $_TMP(mode_1) end
 unset _TMP(mode_1)
 pw::Application markUndoLevel Solve
+
+if {$Euler == "OFF"} {
+  if { $FarfieldShape == "Gallery"} {
+    if { $FarfieldBC == "NS" } {
+
+      # I cannot use the match BC otherwise it will create larger elements
+      set _TMP(mode_1) [pw::Application begin Modify [list $_CN(5) $_CN(7)]]
+        $_CN(5) replaceDistribution 1 [pw::DistributionGrowth create]
+        set Distr [$_CN(5) getDistribution 1]
+        $Distr setBeginSpacing $ActualGalleryInitialWallSpacing
+        $Distr setEndSpacing $ActualGalleryInitialWallSpacing
+        $Distr setMiddleMode ContinueGrowth
+        $Distr setBeginRate $GrowthRateBL
+        $Distr setEndRate $GrowthRateBL
+        $Distr setMiddleSpacing [expr {$FarfieldSpacing * $Chord}]
+
+
+        $_CN(5) setSubConnectorDimensionFromDistribution 1
+
+        $_CN(7) replaceDistribution 1 [pw::DistributionGrowth create]
+        set Distr [$_CN(7) getDistribution 1]
+        $Distr setBeginSpacing $ActualGalleryInitialWallSpacing
+        $Distr setEndSpacing $ActualGalleryInitialWallSpacing
+        $Distr setMiddleMode ContinueGrowth
+        $Distr setBeginRate $GrowthRateBL
+        $Distr setEndRate $GrowthRateBL
+        $Distr setMiddleSpacing [expr {$FarfieldSpacing * $Chord}]
+
+
+        $_CN(7) setSubConnectorDimensionFromDistribution 1
+
+        unset Distr
+      $_TMP(mode_1) end
+      unset _TMP(mode_1)
+    }
+  }
+}
 
 
 
